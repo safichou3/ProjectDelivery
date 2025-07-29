@@ -1,0 +1,16 @@
+{% extends 'chef/dashboard.html.twig' %}
+
+{% block title %}Edit Dish{% endblock %}
+
+{% block dashboard_content %}
+    <div class="container">
+        <h1>Edit Dish</h1>
+        {{ form_start(form) }}
+        {{ form_row(form.menu) }}
+        {{ form_row(form.name) }}
+        {{ form_row(form.description) }}
+        {{ form_row(form.image) }}
+        <button class="btn btn-primary">Update Dish</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

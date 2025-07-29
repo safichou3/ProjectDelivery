@@ -1,0 +1,88 @@
+{% extends 'chef/dashboard.html.twig' %}
+
+{% block title %}Create New Menu{% endblock %}
+
+{% block dashboard_content %}
+
+    {% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+    <div class="container mt-4">
+        <h2 class="mb-4">Create New Menu</h2>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'success' ? 'success' : 'danger' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {{ form_start(form, {
+            'attr': {'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}
+        }) }}
+
+        {% if form.vars.submitted and not form.vars.valid %}
+            <div class="alert alert-danger">
+                Please correct the errors below.
+            </div>
+        {% endif %}
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                {{ form_label(form.title) }}
+                {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.title) }}
+            </div>
+
+            <div class="col-md-6">
+                {{ form_label(form.price) }}
+                {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.price) }}
+            </div>
+
+            <div class="col-md-12">
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.description) }}
+            </div>
+
+            <div class="col-md-6">
+                {{ form_label(form.availableFrom) }}
+                {{ form_widget(form.availableFrom, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.availableFrom) }}
+            </div>
+
+            <div class="col-md-6">
+                {{ form_label(form.availableTo) }}
+                {{ form_widget(form.availableTo, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.availableTo) }}
+            </div>
+
+            <div class="col-md-6">
+                {{ form_label(form.cuisineType) }}
+                {{ form_widget(form.cuisineType, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.cuisineType) }}
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-check mt-4">
+                    {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                    {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                </div>
+                {{ form_errors(form.isActive) }}
+            </div>
+
+            <div class="mb-3">
+                {{ form_label(form.image) }}
+                {{ form_widget(form.image, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.image) }}
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-4">Save Menu</button>
+
+        {{ form_end(form) }}
+    </div>
+
+{% endblock %}

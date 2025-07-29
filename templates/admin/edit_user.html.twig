@@ -1,0 +1,16 @@
+{% extends 'admin/dashboard.html.twig' %}
+
+{% block title %}Admin - Edit User{% endblock %}
+
+{% block dashboard_content %}
+    <h2 class="mb-4">Edit User</h2>
+
+    {{ form_start(form) }}
+    {{ form_row(form.name) }}
+    {{ form_row(form.email) }}
+    {{ form_row(form.phoneNumber) }}
+    {{ form_row(form.address) }}
+    {{ form_row(form.role) }}
+    <button class="btn btn-success mt-3">Update</button>
+    {{ form_end(form) }}
+{% endblock %}

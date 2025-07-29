@@ -1,0 +1,58 @@
+{% extends 'admin/dashboard.html.twig' %}
+
+{% block title %}Admin - All Chefs{% endblock %}
+
+{% block dashboard_content %}
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Chef's Profile</h2>
+        </div>
+
+        <table class="table table-hover table-striped">
+            <thead class="table-secondary">
+            <tr>
+                <th>#</th>
+                <th>Profile Image</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Bio</th>
+                <th>Certification</th>
+                <th>Approved</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for chef in chefs %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        {% if chef.image %}
+                            <img src="{{ asset('uploads/' ~ chef.image) }}" width="50" height="50" class="rounded-circle" style="object-fit:cover;">
+                        {% else %}
+                            <span class="text-muted">No Image</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ chef.name }}</td>
+                    <td>{{ chef.email }}</td>
+                    <td>{{ chef.bio ? chef.bio|slice(0, 40) ~ '...' : '—' }}</td>
+                    <td>{{ chef.certification ?: '—' }}</td>
+                    <td>
+                        {% if chef.approved == 1 %}
+                            <span class="badge bg-success">Yes</span>
+                        {% else %}
+                            <span class="badge bg-secondary">No</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ path('admin_chef_profile_view', { id: chef.id }) }}" class="btn btn-sm btn-primary">View</a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted">No chefs found.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Verify Phone Number{% endblock %}
+
+{% block body %}
+    <h2>Verify Phone Number</h2>
+    <p>An OTP has been sent to your phone. Please enter it below:</p>
+
+    {{ form_start(otpForm) }}
+    {{ form_row(otpForm.otp) }}
+    <button class="btn btn-primary">Verify</button>
+    {{ form_end(otpForm) }}
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'admin/dashboard.html.twig' %}
+
+{% block title %}Chef Profile Details{% endblock %}
+
+{% block dashboard_content %}
+    <div class="container mt-4">
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+        <h2 class="mb-4">Chef Profile Details</h2>
+        {% if profile.image %}
+            <img src="{{ asset('uploads/' ~ profile.image) }}" class="img-thumbnail mb-3" style="max-height: 150px;">
+        {% endif %}
+
+        <p><strong>Name:</strong> {{ profile.user.name }}</p>
+        <p><strong>Email:</strong> {{ profile.user.email }}</p>
+        <p><strong>Bio:</strong> {{ profile.bio }}</p>
+        <p><strong>Certification:</strong> {{ profile.certification ?: '—' }}</p>
+
+        <div class="d-flex justify-content-start mt-4">
+            {% if profile.approved %}
+                <a href="{{ path('admin_chef_profile_reject', { id: profile.id }) }}" class="btn btn-outline-danger me-2">
+                    Reject
+                </a>
+            {% else %}
+                <a href="{{ path('admin_chef_profile_approve', { id: profile.id }) }}" class="btn btn-outline-success me-2">
+                    Approve
+                </a>
+            {% endif %}
+            <a href="{{ path('admin_chefs') }}" class="btn btn-secondary">Back</a>
+        </div>
+    </div>
+{% endblock %}

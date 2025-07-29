@@ -1,0 +1,35 @@
+{% extends 'chef/dashboard.html.twig' %}
+
+{% block title %}Settings{% endblock %}
+
+{% block dashboard_content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Chef Profile</h2>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+        {% if profile.approved == 1 %}
+            <div class="alert alert-success mt-3">
+                ✅ Your profile is approved.
+            </div>
+        {% else %}
+            <div class="alert alert-warning mt-3">
+                ⏳ Your profile is under review. Please wait for admin approval.
+            </div>
+        {% endif %}
+        {% if profile.image %}
+            <div class="mb-3">
+                <label class="form-label fw-bold">Profile Image:</label><br>
+                <img src="{{ asset('uploads/' ~ profile.image) }}" alt="Profile Image" class="img-thumbnail" style="max-height: 150px;">
+            </div>
+        {% endif %}
+
+        {{ form_start(form) }}
+        {{ form_row(form.bio) }}
+        {{ form_row(form.certification) }}
+        {{ form_row(form.image) }}
+        <button class="btn btn-primary mt-3">Save</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

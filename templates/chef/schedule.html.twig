@@ -1,0 +1,50 @@
+{% extends 'chef/dashboard.html.twig' %}
+
+{% block title %}Chef Schedule{% endblock %}
+
+{% block dashboard_content %}
+    <div class="container">
+        <h2>Chef Schedule</h2>
+
+        {{ form_start(form) }}
+        <div class="row mb-3">
+            <div class="col">{{ form_row(form.dayOfWeek) }}</div>
+            <div class="col">{{ form_row(form.openingTime) }}</div>
+            <div class="col">{{ form_row(form.closingTime) }}</div>
+            <div class="col">{{ form_row(form.isClosed) }}</div>
+            <div class="col">{{ form_row(form.exceptionDate) }}</div>
+        </div>
+        <button class="btn btn-primary">Save Schedule</button>
+        {{ form_end(form) }}
+
+        <hr>
+
+        <h4 class="mt-4">Existing Schedules</h4>
+        <table class="table table-bordered">
+            <thead class="table-light">
+            <tr>
+                <th>#</th>
+                <th>Day</th>
+                <th>Opening</th>
+                <th>Closing</th>
+                <th>Closed</th>
+                <th>Exception Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for schedule in schedules %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ schedule.dayOfWeek }}</td>
+                    <td>{{ schedule.openingTime|date('H:i') }}</td>
+                    <td>{{ schedule.closingTime|date('H:i') }}</td>
+                    <td>{{ schedule.isClosed ? 'Yes' : 'No' }}</td>
+                    <td>{{ schedule.exceptionDate ? schedule.exceptionDate|date('Y-m-d') : '—' }}</td>
+                </tr>
+            {% else %}
+                <tr><td colspan="6" class="text-center text-muted">No schedule found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

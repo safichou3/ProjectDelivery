@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Chef Dashboard{% endblock %}
+
+{% block content %}
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebarMenu" class="col-md-2 sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li>
+                            <a class="nav-link {{ app.request.attributes.get('_route') starts with 'chef_dashboard' ? 'active' : '' }}" href="{{ path('chef_dashboard') }}">
+                                <span></span> Dashboard
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li>
+                            <a class="nav-link {{ app.request.attributes.get('_route') starts with 'chef_menu' ? 'active' : '' }}" href="{{ path('chef_menu') }}">
+                                <span></span> Menu
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li>
+                            <a class="nav-link {{ app.request.attributes.get('_route') starts with 'chef_dish' ? 'active' : '' }}" href="{{ path('chef_dish') }}">
+                                <span></span> Dishes
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li>
+                            <a class="nav-link {{ app.request.attributes.get('_route') starts with 'chef_schedule' ? 'active' : '' }}" href="{{ path('chef_schedule') }}">
+                                <span></span> Schedule
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div id="sidebarBottomText">
+                    <p class="text-center">© Homemade Meals</p>
+                </div>
+            </nav>
+
+            <main class="col-md-10 ms-auto px-30 bg-light">
+                {% block dashboard_content %}
+                {% if app.request.attributes.get('_route') == 'chef_dashboard' %}
+                <h1>Welcome, Chef {{ app.user.name }}</h1>
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm bg-light" style="min-height: 150px;">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h6 class="text-muted">Menus</h6>
+                                <h3 class="fw-bold text-dark">{{ menuCount }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm bg-light" style="min-height: 150px;">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h6 class="text-muted">Dishes</h6>
+                                <h3 class="fw-bold text-dark">{{ dishCount }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm bg-light" style="min-height: 150px;">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h6 class="text-muted">Schedules</h6>
+                                <h3 class="fw-bold text-dark">{{ scheduleCount }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endblock %}
+            </main>
+        </div>
+    </div>
+{% endblock %}

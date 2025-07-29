@@ -1,0 +1,82 @@
+{% extends 'admin/dashboard.html.twig' %}
+
+{% block title %}Edit Menu - Admin{% endblock %}
+
+{% block dashboard_content %}
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Edit Menu</h2>
+            <a href="{{ path('admin_menus') }}" class="btn btn-secondary">← Back to Menus</a>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('danger') %}
+            <div class="alert alert-danger">{{ message }}</div>
+        {% endfor %}
+
+        {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.title) }}
+                {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.title) }}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.price) }}
+                {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.price) }}
+            </div>
+
+            <div class="col-md-12 mb-3">
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': 4}}) }}
+                {{ form_errors(form.description) }}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.availableFrom) }}
+                {{ form_widget(form.availableFrom, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.availableFrom) }}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.availableTo) }}
+                {{ form_widget(form.availableTo, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.availableTo) }}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.cuisineType) }}
+                {{ form_widget(form.cuisineType, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.cuisineType) }}
+            </div>
+
+            <div class="col-md-6 mb-3">
+                {{ form_label(form.isActive) }}
+                {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                {{ form_errors(form.isActive) }}
+            </div>
+
+            <div class="col-md-12 mb-3">
+                <label class="form-label">Current Image</label><br>
+                {% if menu.image %}
+                    <img src="{{ asset('uploads/' ~ menu.image) }}" width="120" height="90" style="object-fit:cover;" class="mb-2">
+                {% else %}
+                    <p class="text-muted">No image uploaded</p>
+                {% endif %}
+            </div>
+
+            <div class="col-md-12 mb-4">
+                {{ form_label(form.image) }}
+                {{ form_widget(form.image, {'attr': {'class': 'form-control'}}) }}
+                {{ form_errors(form.image) }}
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success">Update Menu</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

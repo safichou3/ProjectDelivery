@@ -1,0 +1,41 @@
+{% extends 'chef/dashboard.html.twig' %}
+{% block title %}Add Dish{% endblock %}
+
+{% block dashboard_content %}
+    <div class="container mt-4">
+        <h2 class="mb-4">Add New Dish</h2>
+
+        {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+
+
+        {{ form_errors(form) }}
+
+        <div class="mb-3">
+            {{ form_label(form.menu) }}
+            {{ form_widget(form.menu) }}
+            {{ form_errors(form.menu) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name) }}
+            {{ form_errors(form.name) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.description) }}
+            {{ form_widget(form.description) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.image) }}
+            {{ form_widget(form.image) }}
+            {{ form_errors(form.image) }}
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Save</button>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

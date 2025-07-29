@@ -1,0 +1,58 @@
+{% extends 'admin/dashboard.html.twig' %}
+
+{% block title %}Admin - Chef Schedules{% endblock %}
+
+{% block dashboard_content %}
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>All Chef Schedules</h2>
+        </div>
+
+        <table class="table table-hover table-striped">
+            <thead class="table-secondary">
+            <tr>
+                <th>#</th>
+                <th>Chef</th>
+                <th>Day</th>
+                <th>Opening Time</th>
+                <th>Closing Time</th>
+                <th>Closed</th>
+                <th>Exception Date</th>
+                <th>Created At</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for schedule in schedules %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ schedule.chef ? schedule.chef.name : '—' }}</td>
+                    <td>{{ schedule.dayOfWeek }}</td>
+                    <td>{{ schedule.openingTime ? schedule.openingTime|date('H:i') : '—' }}</td>
+                    <td>{{ schedule.closingTime ? schedule.closingTime|date('H:i') : '—' }}</td>
+                    <td>
+                        {% if schedule.isClosed %}
+                            <span class="badge bg-secondary">Yes</span>
+                        {% else %}
+                            <span class="badge bg-success">No</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ schedule.exceptionDate ? schedule.exceptionDate|date('Y-m-d') : '—' }}</td>
+                    <td>{{ schedule.createdAt ? schedule.createdAt|date('Y-m-d H:i') : '—' }}</td>
+                    <td>
+                        <a href="{{ path('admin_schedule_delete', {id: schedule.id}) }}"
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Are you sure you want to delete this schedule?');">
+                            Delete
+                        </a>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="8" class="text-center text-muted">No schedules found.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
