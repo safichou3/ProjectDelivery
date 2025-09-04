@@ -20,7 +20,7 @@ class StripeController
         $data = json_decode($request->getContent(), true);
         $totalAmount = $data['amount'] ?? 0;
         $orderIds = $data['orderIds'] ?? [];
-        $stripeSecret = getenv('STRIPE_SECRET');
+        $stripeSecret = $_ENV('STRIPE_SECRET');
         Stripe::setApiKey($stripeSecret);
         $origin = $_ENV['APP_URL'];
 

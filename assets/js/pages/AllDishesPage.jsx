@@ -105,7 +105,7 @@ export default function AllDishesPage() {
                 {filteredDishes.length > 0 ? (
                     filteredDishes.map(dish => (
                         <div key={dish.id} className="col-md-6 col-lg-3 col-12 my-3 recipe-card" style={{ cursor: "pointer" }} onClick={() => navigate(`/dish/${dish.id}`)}>
-                            <div className="card border-0 rounded-3 overflow-hidden aj-drop-shadow">
+                            <div className="card border-0 rounded-3 overflow-hidden aj-drop-shadow h-100">
                                 <img className="card-img-top rounded-0" src={dish.image || "/meal.png"} alt={dish.name}/>
                                 <div className="card-body py-2">
                                     <div className="row align-items-center">

@@ -228,7 +228,7 @@ export default function ChefPage() {
                         {displayMenus.length > 0 ? (
                             displayMenus.map(menu => (
                                 <div className="col-md-6 col-lg-3 col-12 my-3 recipe-card" key={menu.id} onClick={() => handleMenuClick(menu.id)} style={{ cursor: 'pointer' }}>
-                                    <div className="card border-0 rounded-3 overflow-hidden aj-drop-shadow">
+                                    <div className="card border-0 rounded-3 overflow-hidden aj-drop-shadow h-100">
                                         <img className="card-img-top rounded-0" src={menu.image || "/meal.png"} alt={menu.title}/>
                                         <div className="card-body py-2">
                                             <div className="row align-items-center">

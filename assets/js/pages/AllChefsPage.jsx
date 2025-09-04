@@ -30,7 +30,7 @@ export default function AllChefsPage() {
             <div className="row">
                 {chefs.map(chef => (
                     <div key={chef.id} className="col-md-6 col-lg-3 col-12 my-3 recipe-card" style={{ cursor: "pointer" }} onClick={() => navigate(`/chef/${chef.id}`, { state: { chef } })}>
-                        <div className="card border-0 rounded-3 overflow-hidden aj-drop-shadow">
+                        <div className="card border-0 rounded-3 overflow-hidden aj-drop-shadow h-100">
                             <img className="card-img-top rounded-0" src={chef.image || "/meal.png"} alt={chef.name}/>
                             <div className="card-body py-2">
                                 <h5 className="card-title body-text-small fw-bold mb-0 lh-2">
