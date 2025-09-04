@@ -1,0 +1,33 @@
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #36454f;">
+    <div class="container-fluid">
+        
+        <div class="ms-auto">
+            {% if app.user %}
+                <div class="dropdown">
+                    <button class="btn btn-link text-white text-decoration-none dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle me-2"></i>{{ app.user.name }}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        {% if is_granted('ROLE_CHEF') %}
+                            <li><a class="dropdown-item" href="{{ path('chef_profile') }}"><i class="fas fa-user-edit me-2"></i>Profile</a></li>
+                        {% endif %}
+                        <li><a class="dropdown-item" href="/profile/setting"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="performLogout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
+            {% else %}
+                <a class="btn btn-outline-light me-2" href="{{ path('app_home') }}">Home</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<script>
+function performLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    sessionStorage.clear();
+    window.location.href = '{{ path('app_logout') }}';
+}
+</script> 

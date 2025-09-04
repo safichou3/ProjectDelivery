@@ -21,6 +21,38 @@ class ChefScheduleRepository extends ServiceEntityRepository
         parent::__construct($registry, ChefSchedule::class);
     }
 
+    public function findAvailableChefs(\DateTimeInterface $dateTime)
+    {
+        $day = $dateTime->format('l');
+        $currentTime = $dateTime->format('H:i:s');
+        $currentDate = $dateTime->format('Y-m-d');
+
+        return $this->createQueryBuilder('cs')
+            ->innerJoin('cs.chef', 'c')
+            ->innerJoin('c.chefProfile', 'cp')
+            ->andWhere('cp.approved = true')
+            ->andWhere('cs.dayOfWeek = :day')
+            ->andWhere('cs.isClosed = false')
+            ->andWhere('(cs.exceptionDate IS NULL OR cs.exceptionDate != :currentDate)')
+            ->andWhere('cs.openingTime <= :currentTime')
+            ->andWhere("
+            (CASE 
+                WHEN cs.closingTime = '00:00:00' 
+                THEN '23:59:59' 
+                ELSE cs.closingTime 
+             END) >= :currentTime
+        ")
+            ->setParameter('day', $day)
+            ->setParameter('currentTime', $currentTime)
+            ->setParameter('currentDate', $currentDate)
+            ->getQuery()
+            ->getResult();
+    }
+
+
+
+
+
 //    /**
 //     * @return ChefSchedule[] Returns an array of ChefSchedule objects
 //     */

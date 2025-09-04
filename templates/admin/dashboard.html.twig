@@ -2,10 +2,18 @@
 
 {% block title %}Admin Dashboard{% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/admin-auth.js') }}"></script>
+{% endblock %}
+
 {% block content %}
     <div class="container-fluid">
         <div class="row">
-            <nav id="sidebarMenu" class="col-md-2 sidebar">
+            <nav id="sidebarMenu" class="col-md-2 sidebar collapse d-md-block">
+                <div class="text-center py-3" style="margin-top: -48px; padding-top: 1rem; background-color: #36454f;">
+                    <h4 class="text-white fw-bold mb-0">ChefChezToi</h4>
+                </div>
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
                         <li>
@@ -13,26 +21,46 @@
                                 <span></span> Dashboard
                             </a>
                         </li>
+                    </ul>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
                         <li>
                             <a class="nav-link {{ app.request.attributes.get('_route') starts with 'admin_users' ? 'active' : '' }}" href="{{ path('admin_users') }}">
                                 <span></span> Users
                             </a>
                         </li>
+                    </ul>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
                         <li>
                             <a class="nav-link {{ app.request.attributes.get('_route') starts with 'admin_chefs' ? 'active' : '' }}" href="{{ path('admin_chefs') }}">
                                 <span></span> Chefs
                             </a>
                         </li>
+                    </ul>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
                         <li>
                             <a class="nav-link {{ app.request.attributes.get('_route') starts with 'admin_menus' ? 'active' : '' }}" href="{{ path('admin_menus') }}">
                                 <span></span> Menus
                             </a>
                         </li>
+                    </ul>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
                         <li>
                             <a class="nav-link {{ app.request.attributes.get('_route') starts with 'admin_dishes' ? 'active' : '' }}" href="{{ path('admin_dishes') }}">
                                 <span></span> Dishes
                             </a>
                         </li>
+                    </ul>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
                         <li>
                             <a class="nav-link {{ app.request.attributes.get('_route') starts with 'admin_schedules' ? 'active' : '' }}" href="{{ path('admin_schedules') }}">
                                 <span></span> Schedules
@@ -40,12 +68,43 @@
                         </li>
                     </ul>
                 </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li>
+                            <a class="nav-link {{ app.request.attributes.get('_route') starts with 'admin_orders' ? 'active' : '' }}" href="{{ path('admin_orders') }}">
+                                <span></span> Orders
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li>
+                            <a class="nav-link {{ app.request.attributes.get('_route') starts with 'admin_support' ? 'active' : '' }}"
+                               href="{{ path('admin_support') }}">
+                                Support
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li>
+                            <a class="nav-link {{ app.request.attributes.get('_route') starts with 'admin_settings' ? 'active' : '' }}" href="{{ path('admin_settings') }}">
+                                Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+
+
 
                 <div id="sidebarBottomText">
                     <p class="text-center">© Homemade Meals</p>
                 </div>
             </nav>
-
+            <button class="btn btn-dark d-md-none mb-3" type="button" id="sidebarToggle">☰ Menu</button>
             <main class="col-md-10 ms-auto px-30 bg-light">
                 {% block dashboard_content %}
                 {% if app.request.attributes.get('_route') == 'admin_dashboard' %}
@@ -61,36 +120,40 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-md-4">
-                            <div class="card border-0 shadow-sm bg-white" style="min-height: 200px;">
+                            <div class="card border-0 shadow-sm bg-light" style="min-height: 150px;">
                                 <div class="card-body text-center d-flex flex-column justify-content-center">
                                     <h6 class="text-muted">Total Chefs</h6>
                                     <h3 class="fw-bold text-dark">{{ totalChefs }}</h3>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-md-4">
-                            <div class="card border-0 shadow-sm bg-light" style="min-height: 200px;">
+                            <div class="card border-0 shadow-sm bg-light" style="min-height: 150px;">
                                 <div class="card-body text-center d-flex flex-column justify-content-center">
                                     <h6 class="text-muted">Total Menus</h6>
                                     <h3 class="fw-bold text-dark">{{ totalMenus }}</h3>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-md-4">
-                            <div class="card border-0 shadow-sm bg-white" style="min-height: 200px;">
+                            <div class="card border-0 shadow-sm bg-light" style="min-height: 150px;">
                                 <div class="card-body text-center d-flex flex-column justify-content-center">
                                     <h6 class="text-muted">Total Dishes</h6>
                                     <h3 class="fw-bold text-dark">{{ totalDishes }}</h3>
                                 </div>
                             </div>
                         </div>
-
                         <div class="col-md-4">
-                            <div class="card border-0 shadow-sm bg-light" style="min-height: 200px;">
+                            <div class="card border-0 shadow-sm bg-light" style="min-height: 150px;">
+                                <div class="card-body text-center d-flex flex-column justify-content-center">
+                                    <h6 class="text-muted">Total Orders</h6>
+                                    <h3 class="fw-bold text-dark">{{ totalorders }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm bg-light" style="min-height: 150px;">
                                 <div class="card-body text-center d-flex flex-column justify-content-center">
                                     <h6 class="text-muted">Total Schedules</h6>
                                     <h3 class="fw-bold text-dark">{{ totalSchedules }}</h3>

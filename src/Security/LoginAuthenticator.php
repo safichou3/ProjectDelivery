@@ -21,7 +21,7 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
 {
     use TargetPathTrait;
 
-    public const LOGIN_ROUTE = 'app_login';
+    public const LOGIN_ROUTE = 'app_home';
 
     public function __construct(private UrlGeneratorInterface $urlGenerator)
     {
@@ -45,11 +45,11 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): ?Response
     {
-        $user = $token->getUser();
-
-        if ($targetPath = $this->getTargetPath($request->getSession(), $firewallName)) {
-            return new RedirectResponse($targetPath);
+        if ($request->isXmlHttpRequest() || 0 === strpos($request->getPathInfo(), '/api')) {
+            return null;
         }
+
+        $user = $token->getUser();
 
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
             return new RedirectResponse($this->urlGenerator->generate('admin_dashboard'));
@@ -59,8 +59,10 @@ class LoginAuthenticator extends AbstractLoginFormAuthenticator
             return new RedirectResponse($this->urlGenerator->generate('chef_dashboard'));
         }
 
-        return new RedirectResponse($this->urlGenerator->generate('user_dashboard'));
+        return new RedirectResponse($this->urlGenerator->generate('app_home'));
     }
+
+
 
     protected function getLoginUrl(Request $request): string
     {

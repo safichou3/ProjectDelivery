@@ -3,11 +3,17 @@
 {% block title %}Admin - All Menus{% endblock %}
 
 {% block dashboard_content %}
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>All Menus</h1>
-        </div>
-
+    <div class="container mt-4">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+            <h1 class="mb-4">All Menus</h1>
+    <div class="table-responsive">
         <table class="table table-hover table-striped">
             <thead class="table-secondary">
             <tr>
@@ -15,7 +21,6 @@
                 <th>Image</th>
                 <th>Title</th>
                 <th>Description</th>
-                <th>Price</th>
                 <th>From</th>
                 <th>To</th>
                 <th>Cuisine</th>
@@ -37,7 +42,6 @@
                     </td>
                     <td>{{ menu.title }}</td>
                     <td>{{ menu.description|length > 50 ? menu.description|slice(0, 50) ~ '...' : menu.description }}</td>
-                    <td>{{ menu.price }}</td>
                     <td>{{ menu.availableFrom ? menu.availableFrom|date('Y-m-d') : 'N/A' }}</td>
                     <td>{{ menu.availableTo ? menu.availableTo|date('Y-m-d') : 'N/A' }}</td>
                     <td>{{ menu.cuisineType }}</td>
@@ -53,13 +57,31 @@
                     </td>
                     <td>
                         <a href="{{ path('admin_menu_edit', {'id': menu.id}) }}" class="btn btn-sm btn-primary">Edit</a>
-                        <form method="post" action="{{ path('admin_menu_delete', {'id': menu.id}) }}"
-                              style="display:inline-block"
-                              onsubmit="return confirm('Are you sure you want to delete this menu?');">
-                            <input type="hidden" name="_token" value="{{ csrf_token('delete_menu_' ~ menu.id) }}">
-                            <button class="btn btn-sm btn-danger">Delete</button>
-                        </form>
+                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteMenuModal{{ menu.id }}">
+                            Delete
+                        </button>
+                        <div class="modal fade" id="deleteMenuModal{{ menu.id }}" tabindex="-1" aria-labelledby="deleteMenuModalLabel{{ menu.id }}" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title" id="deleteMenuModalLabel{{ menu.id }}">Confirm Delete</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        Are you sure you want to delete the menu <strong>{{ menu.title }}</strong>?
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <form method="post" action="{{ path('admin_menu_delete', {'id': menu.id}) }}" class="d-inline">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_menu_' ~ menu.id) }}">
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </td>
+
                 </tr>
             {% else %}
                 <tr>
@@ -68,5 +90,6 @@
             {% endfor %}
             </tbody>
         </table>
+        </div>
     </div>
 {% endblock %}

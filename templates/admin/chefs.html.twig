@@ -3,11 +3,17 @@
 {% block title %}Admin - All Chefs{% endblock %}
 
 {% block dashboard_content %}
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Chef's Profile</h2>
-        </div>
-
+    <div class="container mt-4">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+            <h1 class="mb-4">Chef's Profile</h1>
+    <div class="table-responsive">
         <table class="table table-hover table-striped">
             <thead class="table-secondary">
             <tr>
@@ -54,5 +60,6 @@
             {% endfor %}
             </tbody>
         </table>
+        </div>
     </div>
 {% endblock %}

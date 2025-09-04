@@ -9,15 +9,24 @@
         {% for message in app.flashes('success') %}
             <div class="alert alert-success">{{ message }}</div>
         {% endfor %}
-        {% if profile.approved == 1 %}
-            <div class="alert alert-success mt-3">
-                ✅ Your profile is approved.
-            </div>
-        {% else %}
-            <div class="alert alert-warning mt-3">
-                ⏳ Your profile is under review. Please wait for admin approval.
+        {% if not profile.bio or not profile.certification or not profile.image or not profile.licence %}
+            <div class="alert alert-danger mt-3">
+                Please fill your information.
             </div>
         {% endif %}
+
+        {% if profile.bio and profile.certification and profile.image and profile.licence %}
+            {% if profile.approved == 1 %}
+                <div class="alert alert-success mt-3">
+                    ✅ Your profile is approved.
+                </div>
+            {% else %}
+                <div class="alert alert-warning mt-3">
+                    ⏳ Your profile is under review. Please wait for admin approval.
+                </div>
+            {% endif %}
+        {% endif %}
+
         {% if profile.image %}
             <div class="mb-3">
                 <label class="form-label fw-bold">Profile Image:</label><br>
@@ -25,11 +34,49 @@
             </div>
         {% endif %}
 
-        {{ form_start(form) }}
-        {{ form_row(form.bio) }}
-        {{ form_row(form.certification) }}
-        {{ form_row(form.image) }}
-        <button class="btn btn-primary mt-3">Save</button>
+        {% if profile.licence %}
+            <div class="mb-3">
+                <label class="form-label fw-bold">Current Licence/Certificate:</label><br>
+                <a href="{{ asset('uploads/' ~ profile.licence) }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-file-pdf me-2"></i>View Licence
+                </a>
+            </div>
+        {% endif %}
+
+        {{ form_start(form, { attr: { novalidate: 'novalidate', enctype: 'multipart/form-data' } }) }}
+
+        {% if form.vars.submitted and not form.vars.valid %}
+            <div class="alert alert-danger mb-3">
+                Please correct the errors below.
+            </div>
+        {% endif %}
+
+        <div class="mb-3">
+            {{ form_label(form.bio) }}
+            {{ form_widget(form.bio, {'attr': {'class': 'form-control'}}) }}
+            <div class="text-danger">{{ form_errors(form.bio) }}</div>
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.certification) }}
+            {{ form_widget(form.certification, {'attr': {'class': 'form-control'}}) }}
+            <div class="text-danger">{{ form_errors(form.certification) }}</div>
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.image) }}
+            {{ form_widget(form.image, {'attr': {'class': 'form-control'}}) }}
+            <div class="text-danger">{{ form_errors(form.image) }}</div>
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.licence) }}
+            {{ form_widget(form.licence, {'attr': {'class': 'form-control'}}) }}
+            <div class="text-danger">{{ form_errors(form.licence) }}</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">Save</button>
+
         {{ form_end(form) }}
     </div>
 {% endblock %}

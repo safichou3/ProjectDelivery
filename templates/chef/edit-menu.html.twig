@@ -3,18 +3,83 @@
 {% block title %}Edit Menu{% endblock %}
 
 {% block dashboard_content %}
-    <div class="container">
-        <h1>Edit Menu</h1>
-        {{ form_start(form) }}
-        {{ form_row(form.title) }}
-        {{ form_row(form.description) }}
-        {{ form_row(form.price) }}
-        {{ form_row(form.availableFrom) }}
-        {{ form_row(form.availableTo) }}
-        {{ form_row(form.cuisineType) }}
-        {{ form_row(form.image) }}
-        {{ form_row(form.isActive) }}
-        <button class="btn btn-primary">Update Menu</button>
+
+    {% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+    <div class="container mt-4">
+        <h2 class="mb-4">Edit Menu</h2>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="msg msg-{{ label == 'success' ? 'success' : 'danger' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {{ form_start(form, {
+            'attr': {'enctype': 'multipart/form-data', 'novalidate': 'novalidate'}
+        }) }}
+
+        {% if form.vars.submitted and not form.vars.valid %}
+            <div class="msg msg-danger">
+                Please correct the errors below.
+            </div>
+        {% endif %}
+
+        <div class="row g-3">
+            <div class="col-md-12">
+                {{ form_label(form.title) }}
+                {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                <div class="text-danger">{{ form_errors(form.title) }}</div>
+            </div>
+            <div class="col-md-12">
+                {{ form_label(form.description) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}
+                <div class="text-danger">{{ form_errors(form.description) }}</div>
+            </div>
+
+            <div class="col-md-6">
+                {{ form_label(form.availableFrom) }}
+                {{ form_widget(form.availableFrom, {'attr': {'class': 'form-control'}}) }}
+                <div class="text-danger">{{ form_errors(form.availableFrom) }}</div>
+            </div>
+
+            <div class="col-md-6">
+                {{ form_label(form.availableTo) }}
+                {{ form_widget(form.availableTo, {'attr': {'class': 'form-control'}}) }}
+                <div class="text-danger">{{ form_errors(form.availableTo) }}</div>
+            </div>
+
+            <div class="col-md-6">
+                {{ form_label(form.cuisineType) }}
+                {{ form_widget(form.cuisineType, {'attr': {'class': 'form-control'}}) }}
+                <div class="text-danger">{{ form_errors(form.cuisineType) }}</div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-check mt-4">
+                    {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                    {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                </div>
+                <div class="text-danger">{{ form_errors(form.isActive) }}</div>
+            </div>
+
+            <div class="mb-3">
+                {% if menu.image %}
+                    <label class="form-label fw-bold">Current Image:</label><br>
+                    <img src="{{ asset('uploads/' ~ menu.image) }}" alt="Menu Image" style="width:100px; height:60px; object-fit:cover; margin-bottom:5px;"><br>
+                {% endif %}
+                {{ form_label(form.image) }}
+                {{ form_widget(form.image, {'attr': {'class': 'form-control'}}) }}
+                <div class="text-danger">{{ form_errors(form.image) }}</div>
+            </div>
+
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-4">Update Menu</button>
+
         {{ form_end(form) }}
     </div>
+
 {% endblock %}

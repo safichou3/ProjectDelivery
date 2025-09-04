@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Error {{ status_code }}
+{% endblock %}
+
+{% block body %}
+    <div class="container text-center mt-5">
+        <h1 class="display-1 text-danger">
+            {% if status_code == 404 %}
+                404
+            {% elseif status_code == 401 %}
+                401
+            {% else %}
+                {{ status_code }}
+            {% endif %}
+        </h1>
+
+        <h2 class="mb-4">
+            {% if status_code == 404 %}
+                Page Not Found
+            {% elseif status_code == 500 %}
+                Internal Server Error
+            {% elseif status_code == 401 %}
+                Session Expired
+            {% else %}
+                Something went wrong
+            {% endif %}
+        </h2>
+
+        <p class="lead mb-4">
+            {% if status_code == 404 %}
+                Sorry, the page you are looking for does not exist.
+            {% elseif status_code == 500 %}
+                Sorry, something went wrong on our server.
+            {% elseif status_code == 401 %}
+                🔒 For your security, your session has expired.<br>
+                Don’t worry — just log in again to continue enjoying our services.
+            {% else %}
+                Sorry, an unexpected error occurred.
+            {% endif %}
+        </p>
+
+        {% if status_code == 401 %}
+            <div class="alert alert-info mt-4" role="alert">
+                Tip: This usually happens if you’ve been inactive for a while.
+            </div>
+
+            <button id="backHome" class="btn btn-warning btn-lg mt-3">⬅ Back to Home</button>
+
+            <script>
+                localStorage.clear();
+                sessionStorage.clear();
+
+                document.cookie.split(";").forEach(c => {
+                    document.cookie = c.trim().split("=")[0] + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/";
+                });
+
+                document.getElementById("backHome").addEventListener("click", function () {
+                    window.location.href = "{{ path('app_home') }}";
+                });
+            </script>
+        {% else %}
+            <a href="{{ path('app_home') }}" class="btn btn-primary btn-lg">
+                ⬅ Go Home
+            </a>
+        {% endif %}
+    </div>
+{% endblock %}

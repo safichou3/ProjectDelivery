@@ -1,0 +1,35 @@
+{% extends 'admin/dashboard.html.twig' %}
+{% block title %}Support Messages{% endblock %}
+
+{% block dashboard_content %}
+<div class="container mt-4">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+    <h1 class="mb-4">Support Messages</h1>
+
+    {% for msg in messages %}
+        <div class="border rounded p-3 mb-3">
+            <p><strong>From:</strong> {{ msg.user.name }}</p>
+            <p><strong>Subject:</strong> {{ msg.subject }}</p>
+            <p><strong>Message:</strong> {{ msg.message }}</p>
+            <p><strong>Reply:</strong> {{ msg.reply ?: 'No reply yet' }}</p>
+            <p><small>Sent on {{ msg.createdAt|date('d M Y H:i') }}</small></p>
+
+            {% if msg.reply is null %}
+                <form method="post" action="{{ path('admin_support_reply', {id: msg.id}) }}">
+                    <textarea name="reply" class="form-control mb-2" rows="2" required></textarea>
+                    <button type="submit" class="btn btn-primary">Send Reply</button>
+                </form>
+            {% endif %}
+        </div>
+    {% else %}
+        <p>No support messages yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

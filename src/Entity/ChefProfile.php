@@ -14,15 +14,15 @@ class ChefProfile
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\OneToOne(inversedBy: 'chefProfile', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\OneToOne(inversedBy: 'chefProfile')]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?User $user = null;
 
-    #[ORM\Column(type: Types::TEXT)]
-    private ?string $bio = null;
+    #[ORM\Column(type: Types::TEXT, nullable: false)]
+    private string $bio = '';
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $certification = null;
+    #[ORM\Column(length: 255, nullable: false)]
+    private string $certification = '';
 
     #[ORM\Column(type: 'boolean')]
     private bool $approved = false;
@@ -32,6 +32,9 @@ class ChefProfile
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $licence = null;
 
     public function getId(): ?int
     {
@@ -58,19 +61,18 @@ class ChefProfile
     public function setBio(string $bio): static
     {
         $this->bio = $bio;
-
         return $this;
     }
+
 
     public function getCertification(): ?string
     {
         return $this->certification;
     }
 
-    public function setCertification(?string $certification): static
+    public function setCertification(string $certification): static
     {
         $this->certification = $certification;
-
         return $this;
     }
 
@@ -111,6 +113,18 @@ class ChefProfile
     public function setImage(?string $image): static
     {
         $this->image = $image;
+
+        return $this;
+    }
+
+    public function getLicence(): ?string
+    {
+        return $this->licence;
+    }
+
+    public function setLicence(?string $licence): static
+    {
+        $this->licence = $licence;
 
         return $this;
     }

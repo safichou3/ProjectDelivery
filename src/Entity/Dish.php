@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\DishRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -15,14 +17,17 @@ class Dish
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'dishes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?Menu $menu = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $name = null;
+    #[ORM\Column(length: 255, nullable: false)]
+    private string $name;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $ingredients = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $image = null;
@@ -31,8 +36,14 @@ class Dish
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'dishes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?User $chef = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: false)]
+    private string $price;
+
+    #[ORM\OneToMany(mappedBy: 'dish', targetEntity: FavoriteDish::class)]
+    private Collection $favoriteDishes;
 
     public function getId(): ?int
     {
@@ -102,6 +113,7 @@ class Dish
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->favoriteDishes = new ArrayCollection();
     }
 
     public function getChef(): ?User
@@ -112,6 +124,57 @@ class Dish
     public function setChef(?User $chef): static
     {
         $this->chef = $chef;
+
+        return $this;
+    }
+
+    public function getPrice(): ?string
+    {
+        return $this->price;
+    }
+
+    public function setPrice(string $price): static
+    {
+        $this->price = $price;
+
+        return $this;
+    }
+
+    public function getIngredients(): ?string
+    {
+        return $this->ingredients;
+    }
+    public function setIngredients(?string $ingredients): static
+    {
+        $this->ingredients = $ingredients;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FavoriteDish>
+     */
+    public function getFavoriteDishes(): Collection
+    {
+        return $this->favoriteDishes;
+    }
+
+    public function addFavoriteDish(FavoriteDish $favoriteDish): static
+    {
+        if (!$this->favoriteDishes->contains($favoriteDish)) {
+            $this->favoriteDishes->add($favoriteDish);
+            $favoriteDish->setDish($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFavoriteDish(FavoriteDish $favoriteDish): static
+    {
+        if ($this->favoriteDishes->removeElement($favoriteDish)) {
+            if ($favoriteDish->getDish() === $this) {
+                $favoriteDish->setDish(null);
+            }
+        }
 
         return $this;
     }

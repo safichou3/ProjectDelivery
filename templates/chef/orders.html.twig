@@ -1,0 +1,72 @@
+{% extends 'chef/dashboard.html.twig' %}
+
+{% block title %}Chef Orders{% endblock %}
+
+{% block dashboard_content %}
+    <div class="container mt-4">
+        <h1 class="mb-4">Orders</h1>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-secondary">
+            <tr>
+                <th>#</th>
+                <th>Order Date</th>
+                <th>Pickup Date</th>
+                <th>Client</th>
+                <th>Dish</th>
+                <th>Quantity</th>
+                <th>Total</th>
+                <th>Payment</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for order in orders %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ order.createdAt|date('Y-m-d H:i') }}</td>
+                    <td>{{ order.pickupDate ? order.pickupDate|date('Y-m-d H:i') : 'Not set' }}</td>
+                    <td>{{ order.client.name }} ({{ order.client.email }})</td>
+                    <td>{{ order.dish.name }}</td>
+                    <td>{{ order.quantity }}</td>
+                    <td>{{ order.totalAmount }}</td>
+                    <td>{{ order.paymentType }} / {{ order.paymentStatus }}</td>
+                    <td>
+                        {% if order.status == 'pending' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elseif order.status == 'confirmed' %}
+                            <span class="badge bg-info">Confirmed</span>
+                        {% elseif order.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                        {% elseif order.status == 'cancelled' %}
+                            <span class="badge bg-danger">Cancelled</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ order.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="post" action="{{ path('chef_order_update_status', { id: order.id }) }}" class="d-flex gap-2">
+                            <input type="hidden" name="_token" value="{{ csrf_token('order_status_' ~ order.id) }}" />
+                            <select name="status" class="form-select form-select-sm w-auto">
+                                <option value="pending" {{ order.status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="in_progress" {{ order.status == 'in_progress' ? 'selected' : '' }}>In Progress</option>
+                                <option value="delivered" {{ order.status == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                            </select>
+                            <button class="btn btn-sm btn-primary">Update</button>
+                            <a href="{{ path('chef_order_client_info', {id: order.id}) }}" class="btn btn-sm btn-secondary">
+                                View Client
+                            </a>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="10" class="text-center text-muted">No orders yet.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+{% endblock %}

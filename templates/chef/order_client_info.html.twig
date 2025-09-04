@@ -1,0 +1,36 @@
+{% extends 'chef/dashboard.html.twig' %}
+
+{% block title %}Client Info{% endblock %}
+
+{% block dashboard_content %}
+    <div class="container mt-4">
+        <h1 class="mb-4">Client Information</h1>
+
+        <div class="card mb-4">
+            <div class="card-header text-white" style="background-color: #ff6900;">Client Details</div>
+            <div class="card-body">
+                <p><strong>Name:</strong> {{ client.name }}</p>
+                <p><strong>Email:</strong> {{ client.email }}</p>
+                <p><strong>Phone:</strong> {{ client.phoneNumber }}</p>
+                <p><strong>Address:</strong> {{ client.address }}</p>
+                <p><strong>Country:</strong> {{ client.country }}</p>
+                <p><strong>City:</strong> {{ client.city }}</p>
+                <p><strong>Postal Code:</strong> {{ client.postalCode }}</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header text-white" style="background-color: #ff6900;">Order Details</div>
+            <div class="card-body">
+                <p><strong>Menu:</strong> {{ order.dish.menu.title }}</p>
+                <p><strong>Dish:</strong> {{ order.dish.name }}</p>
+                <p><strong>Quantity:</strong> {{ order.quantity }}</p>
+                <p><strong>Total:</strong> {{ order.totalAmount }}</p>
+                <p><strong>Payment:</strong> {{ order.paymentType }} / {{ order.paymentStatus }}</p>
+                <p><strong>Status:</strong> {{ order.status|capitalize }}</p>
+                <p><strong>Reservation Date:</strong> {{ order.pickupDate ? order.pickupDate|date('Y-m-d H:i') : 'Not set' }}</p>
+                <p><strong>Order Created:</strong> {{ order.createdAt|date('Y-m-d H:i') }}</p>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,3 +1,20 @@
+# config/routes.yaml
+
+# 1. Define specific, explicit routes that are not covered by annotations
+# (Though in your case, admin_dashboard could also be an annotation,
+# but keeping it here for demonstration of explicit routes first).
+admin_dashboard:
+    path: /admin/dashboard
+    controller: App\Controller\AdminController::dashboard
+
+api_login_check:
+    path: /api/login
+
+# 2. IMPORT ALL OTHER SYMFONY ROUTES VIA RESOURCES
+# These directives load all routes defined using annotations in your controllers
+# and any default routes from the kernel.
+# THIS IS CRUCIAL: All specific Symfony routes (like /api/*, /admin/*, /user/*, etc.
+# defined in your other controllers) will be loaded here.
 controllers:
     resource: ../src/Controller/
     type: annotation
@@ -5,3 +22,17 @@ controllers:
 kernel:
     resource: ../src/Kernel.php
     type: annotation
+
+
+# 3. THE CATCH-ALL REACT ROUTE MUST BE LAST
+# This route acts as a fallback. It will only be matched if no other
+# more specific Symfony route (either explicit or loaded via resources)
+# has already handled the request.
+react_app:
+    path: /{reactRouting}
+    controller: App\Controller\ReactAppController::index
+    methods: [GET]
+    requirements:
+        # Exclude specific Symfony backend routes
+        # Allow frontend routes like /chef/3, /menu/5, /cart, /payment, etc.
+        reactRouting: "^(?!api|admin|chef/dashboard|chef/menu|chef/dish|chef/profile|chef/schedule|chef/orders|user/dashboard|menus|uploads|_wdt|_profiler).+"

@@ -1,7 +1,4 @@
 <?php
-
-// src/Service/TwilioService.php
-
 namespace App\Service;
 
 use Twilio\Rest\Client;

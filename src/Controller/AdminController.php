@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Reservation;
+use App\Entity\SupportMessage;
 use App\Entity\User;
 use App\Entity\Menu;
 use App\Entity\Dish;
@@ -17,6 +19,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use App\Form\UserType;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use App\Entity\Settings;
+use App\Form\SettingsType;
 
 class AdminController extends AbstractController
 {
@@ -24,16 +28,18 @@ class AdminController extends AbstractController
     #[Route('/admin/dashboard', name: 'admin_dashboard')]
     public function dashboard(EntityManagerInterface $em): Response
     {
-        $userRepo = $em->getRepository(User::class);
-        $menuRepo = $em->getRepository(Menu::class);
-        $dishRepo = $em->getRepository(Dish::class);
+        $userRepo     = $em->getRepository(User::class);
+        $menuRepo     = $em->getRepository(Menu::class);
+        $dishRepo     = $em->getRepository(Dish::class);
         $scheduleRepo = $em->getRepository(ChefSchedule::class);
+        $orderRepo    = $em->getRepository(reservation::class);
 
         $totalUsers = count($userRepo->findAll());
         $totalChefs = count($userRepo->findBy(['role' => 'chef']));
         $totalMenus = count($menuRepo->findAll());
         $totalDishes = count($dishRepo->findAll());
         $totalSchedules = count($scheduleRepo->findAll());
+        $totalorders = count($orderRepo->findAll());
 
         return $this->render('admin/dashboard.html.twig', [
             'totalUsers' => $totalUsers,
@@ -41,6 +47,7 @@ class AdminController extends AbstractController
             'totalMenus' => $totalMenus,
             'totalDishes' => $totalDishes,
             'totalSchedules' => $totalSchedules,
+            'totalorders' => $totalorders,
         ]);
     }
 
@@ -87,10 +94,21 @@ class AdminController extends AbstractController
         $form = $this->createForm(MenuType::class, $menu);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $imageFile = $form->get('image')->getData();
+
+            if ($imageFile) {
+                $newFilename = uniqid().'.'.$imageFile->guessExtension();
+                $imageFile->move($this->getParameter('uploads_directory'), $newFilename);
+                $menu->setImage($newFilename);
+            }
             $em->flush();
             $this->addFlash('success', 'Menu updated successfully.');
-            return $this->redirectToRoute('admin_menus');
+                return $this->redirectToRoute('admin_menus');
+            } else {
+                $this->addFlash('error', 'Please correct the errors in the form.');
+            }
         }
 
         return $this->render('admin/edit_menu.html.twig', [
@@ -105,7 +123,9 @@ class AdminController extends AbstractController
         if ($this->isCsrfTokenValid('delete_menu_' . $menu->getId(), $request->request->get('_token'))) {
             $em->remove($menu);
             $em->flush();
-            $this->addFlash('danger', 'Menu deleted.');
+            $this->addFlash('success', 'Menu deleted successfully.');
+        } else {
+            $this->addFlash('error', 'Invalid CSRF token. Menu could not be deleted.');
         }
 
         return $this->redirectToRoute('admin_menus');
@@ -123,24 +143,25 @@ class AdminController extends AbstractController
     public function edit(Request $request, Dish $dish, EntityManagerInterface $em): Response
     {
         $chef = $dish->getMenu()?->getChef();
-        $form = $this->createForm(DishType::class, $dish, [
-            'chef' => $chef,
-        ]);
+        $form = $this->createForm(DishType::class, $dish, ['chef' => $chef]);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $imageFile = $form->get('image')->getData();
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $imageFile = $form->get('image')->getData();
 
-            if ($imageFile) {
-                $newFilename = uniqid().'.'.$imageFile->guessExtension();
-                $imageFile->move($this->getParameter('uploads_directory'), $newFilename);
-                $dish->setImage($newFilename);
+                if ($imageFile) {
+                    $newFilename = uniqid().'.'.$imageFile->guessExtension();
+                    $imageFile->move($this->getParameter('uploads_directory'), $newFilename);
+                    $dish->setImage($newFilename);
+                }
+
+                $em->flush();
+                $this->addFlash('success', 'Dish updated successfully!');
+                return $this->redirectToRoute('admin_dishes');
+            } else {
+                $this->addFlash('error', 'Please correct the errors in the dish form.');
             }
-
-            $em->flush();
-
-            $this->addFlash('success', 'Dish updated successfully!');
-            return $this->redirectToRoute('admin_dishes'); // adjust as per your route
         }
 
         return $this->render('admin/edit_dish.html.twig', [
@@ -149,13 +170,16 @@ class AdminController extends AbstractController
         ]);
     }
 
+
     #[Route('/admin/dish/{id}/delete', name: 'admin_dish_delete', methods: ['POST'])]
-    public function delete(Request $request, Dish $dish, EntityManagerInterface $em): Response
+    public function delete(Request $request, Dish $dish, EntityManagerInterface $em): RedirectResponse
     {
         if ($this->isCsrfTokenValid('delete_dish_' . $dish->getId(), $request->request->get('_token'))) {
             $em->remove($dish);
             $em->flush();
             $this->addFlash('success', 'Dish deleted successfully!');
+        } else {
+            $this->addFlash('error', 'Invalid CSRF token. Dish could not be deleted.');
         }
 
         return $this->redirectToRoute('admin_dishes');
@@ -181,7 +205,6 @@ class AdminController extends AbstractController
 
         $em->remove($schedule);
         $em->flush();
-
         $this->addFlash('success', 'Schedule deleted successfully.');
         return $this->redirectToRoute('admin_schedules');
     }
@@ -199,10 +222,14 @@ class AdminController extends AbstractController
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->flush();
-            $this->addFlash('success', 'User updated successfully.');
-            return $this->redirectToRoute('admin_users');
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $em->flush();
+                $this->addFlash('success', 'User updated successfully.');
+                return $this->redirectToRoute('admin_users');
+            } else {
+                $this->addFlash('error', 'Please correct the errors in the user form.');
+            }
         }
 
         return $this->render('admin/edit_user.html.twig', [
@@ -217,7 +244,9 @@ class AdminController extends AbstractController
         if ($this->isCsrfTokenValid('delete_user_' . $user->getId(), $request->request->get('_token'))) {
             $em->remove($user);
             $em->flush();
-            $this->addFlash('danger', 'User deleted.');
+            $this->addFlash('success', 'User deleted successfully.');
+        } else {
+            $this->addFlash('error', 'Invalid CSRF token. User could not be deleted.');
         }
 
         return $this->redirectToRoute('admin_users');
@@ -260,5 +289,93 @@ class AdminController extends AbstractController
         $this->addFlash('success', 'Chef has been rejected successfully.');
         return $this->redirectToRoute('admin_chef_profile_view', ['id' => $id]);
     }
+
+    #[Route('/admin/support', name: 'admin_support')]
+    public function support(EntityManagerInterface $em): Response
+    {
+        $messages = $em->getRepository(SupportMessage::class)->findBy([
+            'receiverType' => ['admin', null],
+        ], ['createdAt' => 'DESC']);
+
+        return $this->render('admin/support.html.twig', [
+            'messages' => $messages,
+        ]);
+    }
+
+    #[Route('/admin/support/{id}/reply', name: 'admin_support_reply', methods: ['POST'])]
+    public function replySupport(Request $request, SupportMessage $message, EntityManagerInterface $em): Response
+    {
+        $admin = $this->getUser();
+
+        if ($message->getReceiverType() !== null && $message->getReceiverType() !== 'admin') {
+            throw $this->createAccessDeniedException();
+        }
+
+        $reply = $request->request->get('reply');
+        if ($reply) {
+            $message->setReply($reply);
+            $message->setStatus('answered');
+            $em->flush();
+            $this->addFlash('success', 'Reply sent successfully!');
+        }
+
+        return $this->redirectToRoute('admin_support');
+    }
+
+    #[Route('/admin/settings', name: 'admin_settings')]
+    public function settings(Request $request, EntityManagerInterface $em): Response
+    {
+        $settingsRepo = $em->getRepository(Settings::class);
+
+        $settings = $settingsRepo->findOneBy([]);
+        if (!$settings) {
+            $settings = new Settings();
+            $settings->setTax(0);
+        }
+
+        $form = $this->createForm(SettingsType::class, $settings);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($settings);
+            $em->flush();
+            $this->addFlash('success', 'Settings updated successfully!');
+            return $this->redirectToRoute('admin_settings');
+        }
+
+        return $this->render('admin/settings.html.twig', [
+            'form' => $form->createView(),
+            'settings' => $settings
+        ]);
+    }
+
+    #[Route('/admin/orders', name: 'admin_orders')]
+    public function allOrders(EntityManagerInterface $em): Response
+    {
+        $orders = $em->getRepository(Reservation::class)->findAll();
+        return $this->render('admin/orders.html.twig', ['orders' => $orders]);
+    }
+
+    #[Route('/admin/order/{id}/delete', name: 'admin_order_delete', methods: ['POST'])]
+    public function deleteOrder(Reservation $order, Request $request, EntityManagerInterface $em): RedirectResponse
+    {
+        if ($this->isCsrfTokenValid('delete_order_' . $order->getId(), $request->request->get('_token'))) {
+            $em->remove($order);
+            $em->flush();
+            $this->addFlash('success', 'Order deleted successfully.');
+        } else {
+            $this->addFlash('error', 'Invalid CSRF token. Order could not be deleted.');
+        }
+
+        return $this->redirectToRoute('admin_orders');
+    }
+
+    #[Route('/force-error')]
+    public function forceError()
+    {
+        throw $this->createNotFoundException("Custom 404 test");
+    }
+
+
 
 }

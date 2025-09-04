@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice #{{ order.id }}</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background: #f9f9f9;
+        }
+        .invoice-container {
+            max-width: 800px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .invoice-header h1 {
+            margin: 0;
+            color: #2c3e50;
+        }
+        .invoice-logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ff6900;
+            margin-bottom: 15px;
+        }
+        .invoice-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .invoice-info div {
+            line-height: 1.6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        table th, table td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        table th {
+            background: #f4f4f4;
+        }
+        .totals {
+            text-align: right;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .totals div {
+            margin-bottom: 5px;
+        }
+        .totals strong {
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+<div class="invoice-container">
+    <div class="invoice-header">
+        <div class="invoice-logo">ChefChezToi</div>
+        <h1>Invoice #{{ order.id }}</h1>
+        <p>{{ order.date|date('d M Y') }}</p>
+    </div>
+
+    <div class="invoice-info">
+        <div>
+            <strong>Customer:</strong><br>
+            {{ order.customer }}
+        </div>
+        <div>
+            <strong>Payment Type:</strong> {{ order.paymentType|capitalize }}<br>
+            <strong>Status:</strong> {{ order.paymentStatus|capitalize }}
+        </div>
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Dish</th>
+            <th>Quantity</th>
+            <th>Price (€)</th>
+            <th>Discount (€)</th>
+            <th>Tax (€)</th>
+            <th>Total (€)</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% set totalDiscount = 0 %}
+        {% set totalTax = 0 %}
+        {% set grandTotal = 0 %}
+        {% for item in order.items %}
+            {% set totalDiscount = totalDiscount + (item.discountAmount ?? 0) %}
+            {% set totalTax = totalTax + (item.taxAmount ?? 0) %}
+            {% set grandTotal = grandTotal + item.total %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ item.dish }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>€{{ item.price|number_format(2, ',', '.') }}</td>
+                <td>
+                    {% if item.discountAmount and item.discountAmount > 0 %}
+                        €{{ item.discountAmount|number_format(2, ',', '.') }}
+                        ({{ item.discountPercent }}%)
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if item.taxAmount and item.taxAmount > 0 %}
+                        €{{ item.taxAmount|number_format(2, ',', '.') }}
+                        ({{ item.taxPercent }}%)
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>€{{ item.total|number_format(2, ',', '.') }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totals">
+        {% if totalDiscount > 0 %}
+            <div><strong>Total Discount:</strong> € -{{ totalDiscount|number_format(2, ',', '.') }}</div>
+        {% endif %}
+        {% if totalTax > 0 %}
+            <div><strong>Total Tax:</strong> €{{ totalTax|number_format(2, ',', '.') }}</div>
+        {% endif %}
+        <div><strong>Grand Total:</strong> €{{ grandTotal|number_format(2, ',', '.') }}</div>
+    </div>
+
+    <div class="footer">
+        Thank you for your order!<br>
+        ChefChezToi
+    </div>
+</div>
+</body>
+</html>

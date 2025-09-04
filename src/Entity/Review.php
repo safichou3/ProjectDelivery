@@ -14,17 +14,13 @@ class Review
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'reviews')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?User $client = null;
 
-    #[ORM\ManyToOne(inversedBy: 'reviews')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?User $chef = null;
-
-    #[ORM\OneToOne(inversedBy: 'review', cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Reservation $reservation = null;
 
     #[ORM\Column]
     private ?int $rating = null;
@@ -60,18 +56,6 @@ class Review
     public function setChef(?User $chef): static
     {
         $this->chef = $chef;
-
-        return $this;
-    }
-
-    public function getReservation(): ?Reservation
-    {
-        return $this->reservation;
-    }
-
-    public function setReservation(Reservation $reservation): static
-    {
-        $this->reservation = $reservation;
 
         return $this;
     }

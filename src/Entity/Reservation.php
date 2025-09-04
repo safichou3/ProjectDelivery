@@ -15,18 +15,15 @@ class Reservation
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'reservations')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?User $client = null;
 
-    #[ORM\ManyToOne(inversedBy: 'reservations')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Menu $menu = null;
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+    private ?Dish $dish = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $pickupDate = null;
-
-    #[ORM\Column(type: Types::TIME_MUTABLE)]
-    private ?\DateTimeInterface $pickupTime = null;
 
     #[ORM\Column(length: 255)]
     private ?string $status = null;
@@ -37,17 +34,34 @@ class Reservation
     #[ORM\Column(length: 255)]
     private ?string $paymentStatus = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $paymentType = null;
+
+    #[ORM\Column]
+    private ?int $quantity = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $discountAmount = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $taxAmount = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: true)]
+    private ?string $subTotal = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\OneToOne(mappedBy: 'reservation', cascade: ['persist', 'remove'])]
     private ?Payment $payment = null;
 
-    #[ORM\OneToOne(mappedBy: 'reservation', cascade: ['persist', 'remove'])]
-    private ?Review $review = null;
-
-    #[ORM\OneToOne(mappedBy: 'reservation', cascade: ['persist', 'remove'])]
-    private ?Invoice $invoice = null;
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->status = 'pending';
+        $this->paymentStatus = 'unpaid';
+        $this->quantity = 1;
+    }
 
     public function getId(): ?int
     {
@@ -62,19 +76,17 @@ class Reservation
     public function setClient(?User $client): static
     {
         $this->client = $client;
-
         return $this;
     }
 
-    public function getMenu(): ?Menu
+    public function getDish(): ?Dish
     {
-        return $this->menu;
+        return $this->dish;
     }
 
-    public function setMenu(?Menu $menu): static
+    public function setDish(?Dish $dish): static
     {
-        $this->menu = $menu;
-
+        $this->dish = $dish;
         return $this;
     }
 
@@ -86,19 +98,6 @@ class Reservation
     public function setPickupDate(\DateTimeInterface $pickupDate): static
     {
         $this->pickupDate = $pickupDate;
-
-        return $this;
-    }
-
-    public function getPickupTime(): ?\DateTimeInterface
-    {
-        return $this->pickupTime;
-    }
-
-    public function setPickupTime(\DateTimeInterface $pickupTime): static
-    {
-        $this->pickupTime = $pickupTime;
-
         return $this;
     }
 
@@ -110,7 +109,6 @@ class Reservation
     public function setStatus(string $status): static
     {
         $this->status = $status;
-
         return $this;
     }
 
@@ -122,7 +120,6 @@ class Reservation
     public function setTotalAmount(string $totalAmount): static
     {
         $this->totalAmount = $totalAmount;
-
         return $this;
     }
 
@@ -134,7 +131,39 @@ class Reservation
     public function setPaymentStatus(string $paymentStatus): static
     {
         $this->paymentStatus = $paymentStatus;
+        return $this;
+    }
 
+    public function getPaymentType(): ?string
+    {
+        return $this->paymentType;
+    }
+
+    public function setPaymentType(string $paymentType): static
+    {
+        $this->paymentType = $paymentType;
+        return $this;
+    }
+
+    public function getQuantity(): ?int
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity(int $quantity): static
+    {
+        $this->quantity = $quantity;
+        return $this;
+    }
+
+    public function getDiscountAmount(): ?string
+    {
+        return $this->discountAmount;
+    }
+
+    public function setDiscountAmount(?string $discountAmount): static
+    {
+        $this->discountAmount = $discountAmount;
         return $this;
     }
 
@@ -146,15 +175,7 @@ class Reservation
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
-
         return $this;
-    }
-
-    public function __construct()
-    {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->status = 'pending';
-        $this->paymentStatus = 'unpaid';
     }
 
     public function getPayment(): ?Payment
@@ -164,47 +185,32 @@ class Reservation
 
     public function setPayment(Payment $payment): static
     {
-        // set the owning side of the relation if necessary
         if ($payment->getReservation() !== $this) {
             $payment->setReservation($this);
         }
-
         $this->payment = $payment;
-
         return $this;
     }
 
-    public function getReview(): ?Review
+    public function getTaxAmount(): ?string
     {
-        return $this->review;
+        return $this->taxAmount;
     }
 
-    public function setReview(Review $review): static
+    public function setTaxAmount(?string $taxAmount): static
     {
-        // set the owning side of the relation if necessary
-        if ($review->getReservation() !== $this) {
-            $review->setReservation($this);
-        }
-
-        $this->review = $review;
-
+        $this->taxAmount = $taxAmount;
         return $this;
     }
 
-    public function getInvoices(): ?Invoice
+    public function getSubTotal(): ?string
     {
-        return $this->invoice;
+        return $this->subTotal;
     }
 
-    public function setInvoices(Invoice $invoice): static
+    public function setSubTotal(?string $subTotal): static
     {
-        // set the owning side of the relation if necessary
-        if ($invoice->getReservation() !== $this) {
-            $invoice->setReservation($this);
-        }
-
-        $this->invoice = $invoice;
-
+        $this->subTotal = $subTotal;
         return $this;
     }
 }

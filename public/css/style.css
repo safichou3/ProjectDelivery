@@ -1188,8 +1188,25 @@ input[id='customRange']::-webkit-slider-thumb {
 .sidebar {
     height: 100vh;
     background-color: #343a40;
+    transition: transform 0.3s ease-in-out;
 }
 .sidebar .nav-link.active {
     font-weight: bold;
     background-color: #495057;
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%; /* hidden by default */
+        width: 250px;
+        z-index: 1050;
+    }
+    .sidebar.show {
+        left: 0; /* slide in */
+    }
+    main {
+        margin-left: 0 !important; /* remove sidebar offset on mobile */
+    }
 }

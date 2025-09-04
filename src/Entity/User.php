@@ -47,31 +47,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?ChefProfile $chefProfile = null;
 
-    #[ORM\OneToMany(mappedBy: 'chef', targetEntity: Menu::class)]
+    #[ORM\OneToMany(mappedBy: 'chef', targetEntity: Menu::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $menus;
 
-    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Reservation::class)]
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Reservation::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $reservations;
 
-    #[ORM\OneToMany(mappedBy: 'chef', targetEntity: ChefSchedule::class)]
+    #[ORM\OneToMany(mappedBy: 'chef', targetEntity: ChefSchedule::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $chefSchedules;
 
-    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Review::class)]
+
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Review::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $reviews;
-
-    #[ORM\OneToOne(mappedBy: 'chef', cascade: ['persist', 'remove'])]
-    private ?AdminApproval $adminApproval = null;
-
-    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Notification::class)]
-    private Collection $notifications;
-
     #[ORM\Column(type: 'boolean')]
     private $isVerified = false;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $resetToken = null;
 
-    #[ORM\OneToMany(mappedBy: 'chef', targetEntity: Dish::class)]
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $resetTokenExpiresAt = null;
+
+    #[ORM\OneToMany(mappedBy: 'chef', targetEntity: Dish::class, cascade: ['remove'], orphanRemoval: true)]
     private Collection $dishes;
 
     #[ORM\Column(type: 'string', nullable: true)]
@@ -80,14 +77,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $otpExpiresAt = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $country = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $city = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $postalCode = null;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: SupportMessage::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $supportMessages;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: FavoriteDish::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $favoriteDishes;
+
+
     public function __construct()
     {
         $this->menus = new ArrayCollection();
         $this->reservations = new ArrayCollection();
         $this->chefSchedules = new ArrayCollection();
         $this->reviews = new ArrayCollection();
-        $this->notifications = new ArrayCollection();
         $this->dishes = new ArrayCollection();
+        $this->supportMessages = new ArrayCollection();
+        $this->favoriteDishes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -198,7 +212,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setChefProfile(ChefProfile $chefProfile): static
     {
-        // set the owning side of the relation if necessary
         if ($chefProfile->getUser() !== $this) {
             $chefProfile->setUser($this);
         }
@@ -229,7 +242,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeMenu(Menu $menu): static
     {
         if ($this->menus->removeElement($menu)) {
-            // set the owning side to null (unless already changed)
             if ($menu->getChef() === $this) {
                 $menu->setChef(null);
             }
@@ -259,7 +271,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeReservation(Reservation $reservation): static
     {
         if ($this->reservations->removeElement($reservation)) {
-            // set the owning side to null (unless already changed)
             if ($reservation->getClient() === $this) {
                 $reservation->setClient(null);
             }
@@ -289,7 +300,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeChefSchedule(ChefSchedule $chefSchedule): static
     {
         if ($this->chefSchedules->removeElement($chefSchedule)) {
-            // set the owning side to null (unless already changed)
             if ($chefSchedule->getChef() === $this) {
                 $chefSchedule->setChef(null);
             }
@@ -319,56 +329,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeReview(Review $review): static
     {
         if ($this->reviews->removeElement($review)) {
-            // set the owning side to null (unless already changed)
             if ($review->getClient() === $this) {
                 $review->setClient(null);
-            }
-        }
-
-        return $this;
-    }
-
-    public function getAdminApproval(): ?AdminApproval
-    {
-        return $this->adminApproval;
-    }
-
-    public function setAdminApproval(AdminApproval $adminApproval): static
-    {
-        // set the owning side of the relation if necessary
-        if ($adminApproval->getChef() !== $this) {
-            $adminApproval->setChef($this);
-        }
-
-        $this->adminApproval = $adminApproval;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Notification>
-     */
-    public function getNotifications(): Collection
-    {
-        return $this->notifications;
-    }
-
-    public function addNotification(Notification $notification): static
-    {
-        if (!$this->notifications->contains($notification)) {
-            $this->notifications->add($notification);
-            $notification->setUser($this);
-        }
-
-        return $this;
-    }
-
-    public function removeNotification(Notification $notification): static
-    {
-        if ($this->notifications->removeElement($notification)) {
-            // set the owning side to null (unless already changed)
-            if ($notification->getUser() === $this) {
-                $notification->setUser(null);
             }
         }
 
@@ -419,6 +381,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getResetTokenExpiresAt(): ?\DateTimeInterface
+    {
+        return $this->resetTokenExpiresAt;
+    }
+
+    public function setResetTokenExpiresAt(?\DateTimeInterface $resetTokenExpiresAt): static
+    {
+        $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, Dish>
      */
@@ -440,7 +414,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function removeDish(Dish $dish): static
     {
         if ($this->dishes->removeElement($dish)) {
-            // set the owning side to null (unless already changed)
             if ($dish->getChef() === $this) {
                 $dish->setChef(null);
             }
@@ -469,6 +442,100 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setOtpExpiresAt(?\DateTimeInterface $otpExpiresAt): self
     {
         $this->otpExpiresAt = $otpExpiresAt;
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?string $country): static
+    {
+        $this->country = $country;
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(?string $city): static
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    public function getPostalCode(): ?string
+    {
+        return $this->postalCode;
+    }
+
+    public function setPostalCode(?string $postalCode): static
+    {
+        $this->postalCode = $postalCode;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, SupportMessage>
+     */
+    public function getSupportMessages(): Collection
+    {
+        return $this->supportMessages;
+    }
+
+    public function addSupportMessage(SupportMessage $supportMessage): static
+    {
+        if (!$this->supportMessages->contains($supportMessage)) {
+            $this->supportMessages->add($supportMessage);
+            $supportMessage->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSupportMessage(SupportMessage $supportMessage): static
+    {
+        if ($this->supportMessages->removeElement($supportMessage)) {
+            if ($supportMessage->getUser() === $this) {
+                $supportMessage->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FavoriteDish>
+     */
+    public function getFavoriteDishes(): Collection
+    {
+        return $this->favoriteDishes;
+    }
+
+    public function addFavoriteDish(FavoriteDish $favoriteDish): static
+    {
+        if (!$this->favoriteDishes->contains($favoriteDish)) {
+            $this->favoriteDishes->add($favoriteDish);
+            $favoriteDish->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFavoriteDish(FavoriteDish $favoriteDish): static
+    {
+        if ($this->favoriteDishes->removeElement($favoriteDish)) {
+            if ($favoriteDish->getUser() === $this) {
+                $favoriteDish->setUser(null);
+            }
+        }
 
         return $this;
     }

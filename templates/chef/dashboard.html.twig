@@ -2,10 +2,19 @@
 
 {% block title %}Chef Dashboard{% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/admin-auth.js') }}"></script>
+{% endblock %}
+
 {% block content %}
-    <div class="container-fluid">
+
+    <div class="container-fluid mt-4">
         <div class="row">
-            <nav id="sidebarMenu" class="col-md-2 sidebar">
+            <nav id="sidebarMenu" class="col-md-2 sidebar collapse d-md-block">
+                <div class="text-center py-3" style="margin-top: -48px; padding-top: 1rem; background-color: #36454f;">
+                    <h4 class="text-white fw-bold mb-0">ChefChezToi</h4>
+                </div>
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
                         <li>
@@ -42,13 +51,55 @@
                         </li>
                     </ul>
                 </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li>
+                            <a class="nav-link {{ app.request.attributes.get('_route') starts with 'chef_orders' ? 'active' : '' }}" href="{{ path('chef_orders') }}">
+                                Orders
+                                {% if pendingOrdersCount is defined and pendingOrdersCount > 0 %}
+                                    <span class="badge bg-danger ms-2">{{ pendingOrdersCount }}</span>
+                                {% endif %}
+                            </a>
+
+
+                        </li>
+                    </ul>
+                </div>
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li>
+                            <a class="nav-link {{ app.request.attributes.get('_route') starts with 'chef_support' ? 'active' : '' }}"
+                               href="{{ path('chef_support') }}">
+                                <span></span> Support
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
 
                 <div id="sidebarBottomText">
-                    <p class="text-center">© Homemade Meals</p>
+                    <p class="text-center">©Chefcheztoi</p>
                 </div>
             </nav>
-
+            <button class="btn btn-dark d-md-none mb-3" type="button" id="sidebarToggle">☰ Menu</button>
             <main class="col-md-10 ms-auto px-30 bg-light">
+                {# Flash messages #}
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ label == 'error' ? 'danger' : (label == 'warning' ? 'warning' : (label == 'success' ? 'success' : 'info')) }} mt-3">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+                {% if needsProfileUpdate is defined and needsProfileUpdate %}
+                    <div class="alert alert-light text-primary mt-3">
+                        ⚠️ Please <a href="{{ path('chef_profile') }}">update your profile</a>. Admin approval is required before your profile is visible to users.
+                    </div>
+                {% elseif notApproved is defined and notApproved %}
+                    <div class="alert alert-warning mt-3">
+                        Your profile is awaiting admin approval. Once approved, users will see your profile.
+                    </div>
+                {% endif %}
                 {% block dashboard_content %}
                 {% if app.request.attributes.get('_route') == 'chef_dashboard' %}
                 <h1>Welcome, Chef {{ app.user.name }}</h1>
@@ -74,6 +125,14 @@
                             <div class="card-body text-center d-flex flex-column justify-content-center">
                                 <h6 class="text-muted">Schedules</h6>
                                 <h3 class="fw-bold text-dark">{{ scheduleCount }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm bg-light" style="min-height: 150px;">
+                            <div class="card-body text-center d-flex flex-column justify-content-center">
+                                <h6 class="text-muted">Orders</h6>
+                                <h3 class="fw-bold text-dark">{{ pendingOrdersCount }}</h3>
                             </div>
                         </div>
                     </div>

@@ -15,7 +15,7 @@ class ChefSchedule
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'chefSchedules')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     private ?User $chef = null;
 
     #[ORM\Column(length: 255)]

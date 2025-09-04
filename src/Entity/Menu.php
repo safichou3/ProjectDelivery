@@ -18,26 +18,17 @@ class Menu
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'menus')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
     #[Assert\NotNull(message: 'Chef is required.')]
     private ?User $chef = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'Title is required.')]
-    #[Assert\Length(
-        max: 255,
-        maxMessage: 'Title must be less than 255 characters.'
-    )]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
     #[Assert\NotBlank(message: 'Description is required.')]
     private ?string $description = null;
-
-    #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2, nullable: false)]
-    #[Assert\NotBlank(message: 'Price is required.')]
-    #[Assert\Positive(message: 'Price must be a positive number.')]
-    private string $price;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\Length(
@@ -46,13 +37,11 @@ class Menu
     )]
     private ?string $image = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Assert\NotNull(message: 'Available from date is required.')]
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     #[Assert\Type(\DateTimeInterface::class)]
     private ?\DateTimeInterface $availableFrom = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Assert\NotNull(message: 'Available to date is required.')]
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     #[Assert\Type(\DateTimeInterface::class)]
     private ?\DateTimeInterface $availableTo = null;
 
@@ -70,11 +59,9 @@ class Menu
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\OneToMany(mappedBy: 'menu', targetEntity: Dish::class)]
+    #[ORM\OneToMany(mappedBy: 'menu', targetEntity: Dish::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $dishes;
 
-    #[ORM\OneToMany(mappedBy: 'menu', targetEntity: Reservation::class)]
-    private Collection $reservations;
 
     public function getId(): ?int
     {
@@ -110,22 +97,9 @@ class Menu
         return $this->description;
     }
 
-    public function setDescription(string $description): static
+    public function setDescription(?string $description): static
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    public function getPrice(): ?string
-    {
-        return $this->price;
-    }
-
-    public function setPrice(string $price): static
-    {
-        $this->price = $price;
-
         return $this;
     }
 
@@ -204,7 +178,6 @@ class Menu
         $this->createdAt = new \DateTimeImmutable();
         $this->isActive = true;
         $this->dishes = new ArrayCollection();
-        $this->reservations = new ArrayCollection();
     }
 
     /**
@@ -228,7 +201,6 @@ class Menu
     public function removeDish(Dish $dish): static
     {
         if ($this->dishes->removeElement($dish)) {
-            // set the owning side to null (unless already changed)
             if ($dish->getMenu() === $this) {
                 $dish->setMenu(null);
             }
@@ -236,35 +208,4 @@ class Menu
 
         return $this;
     }
-
-    /**
-     * @return Collection<int, Reservation>
-     */
-    public function getReservations(): Collection
-    {
-        return $this->reservations;
-    }
-
-    public function addReservation(Reservation $reservation): static
-    {
-        if (!$this->reservations->contains($reservation)) {
-            $this->reservations->add($reservation);
-            $reservation->setMenu($this);
-        }
-
-        return $this;
-    }
-
-    public function removeReservation(Reservation $reservation): static
-    {
-        if ($this->reservations->removeElement($reservation)) {
-            // set the owning side to null (unless already changed)
-            if ($reservation->getMenu() === $this) {
-                $reservation->setMenu(null);
-            }
-        }
-
-        return $this;
-    }
-
 }

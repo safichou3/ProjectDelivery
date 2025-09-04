@@ -3,10 +3,18 @@
 {% block title %}Edit Menu - Admin{% endblock %}
 
 {% block dashboard_content %}
-    <div class="container">
+    <div class="container mt-4">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Edit Menu</h2>
-            <a href="{{ path('admin_menus') }}" class="btn btn-secondary">← Back to Menus</a>
+            <h1>Edit Menu</h1>
+            <a href="{{ path('admin_menus') }}" class="btn btn-secondary">← Back to List</a>
         </div>
 
         {% for message in app.flashes('success') %}
@@ -22,12 +30,6 @@
                 {{ form_label(form.title) }}
                 {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
                 {{ form_errors(form.title) }}
-            </div>
-
-            <div class="col-md-6 mb-3">
-                {{ form_label(form.price) }}
-                {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.price) }}
             </div>
 
             <div class="col-md-12 mb-3">

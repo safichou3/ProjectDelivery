@@ -12,19 +12,37 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        main:
-            lazy: true
+
+        login:
+            pattern: ^/api/login
+            stateless: true
+            json_login:
+                check_path: /api/login
+                username_path: email
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        session_login:
+            pattern: ^/api/session-login
+            stateless: false
             provider: app_user_provider
-            custom_authenticator: App\Security\LoginAuthenticator
+            lazy: true
+            context: main
+
+        api:
+            pattern: ^/api
+            stateless: true
+            jwt: ~
+
+        main:
+            pattern: ^/
+            provider: app_user_provider
+            lazy: true
             logout:
                 path: app_logout
-                target: app_login
+                target: app_home
 
-            remember_me:
-                secret: '%kernel.secret%'
-                lifetime: 604800
-                path: /
-                always_remember_me: true
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -35,9 +53,23 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-         - { path: ^/admin, roles: ROLE_ADMIN }
-         - { path: ^/chef, roles: ROLE_CHEF }
-         - { path: ^/user, roles: ROLE_USER }
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/session-login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/verify-otp, roles: PUBLIC_ACCESS }
+        - { path: ^/api/resend-otp, roles: PUBLIC_ACCESS }
+        - { path: ^/api/chefs, roles: PUBLIC_ACCESS }
+        - { path: ^/api/menus, roles: PUBLIC_ACCESS }
+        - { path: ^/api/dishes, roles: PUBLIC_ACCESS }
+        - { path: ^/api/validate-discount, roles: PUBLIC_ACCESS }
+        - { path: ^/admin/dashboard, roles: ROLE_ADMIN }
+        - { path: ^/chef/dashboard, roles: ROLE_CHEF }
+        - { path: ^/chef/menu, roles: ROLE_CHEF }
+        - { path: ^/chef/dish, roles: ROLE_CHEF }
+        - { path: ^/chef/profile, roles: ROLE_CHEF }
+        - { path: ^/chef/schedule, roles: ROLE_CHEF }
+        - { path: ^/chef/orders, roles: ROLE_CHEF }
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:

@@ -11,7 +11,7 @@
 
         {% for label, messages in app.flashes %}
             {% for message in messages %}
-                <div class="alert alert-{{ label == 'success' ? 'success' : 'danger' }}">
+                <div class="msg msg-{{ label == 'success' ? 'success' : 'danger' }}">
                     {{ message }}
                 </div>
             {% endfor %}
@@ -22,24 +22,17 @@
         }) }}
 
         {% if form.vars.submitted and not form.vars.valid %}
-            <div class="alert alert-danger">
+            <div class="alert alert-danger mt-3" role="alert">
                 Please correct the errors below.
             </div>
         {% endif %}
 
         <div class="row g-3">
-            <div class="col-md-6">
+            <div class="col-md-12">
                 {{ form_label(form.title) }}
                 {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
                 {{ form_errors(form.title) }}
             </div>
-
-            <div class="col-md-6">
-                {{ form_label(form.price) }}
-                {{ form_widget(form.price, {'attr': {'class': 'form-control'}}) }}
-                {{ form_errors(form.price) }}
-            </div>
-
             <div class="col-md-12">
                 {{ form_label(form.description) }}
                 {{ form_widget(form.description, {'attr': {'class': 'form-control'}}) }}

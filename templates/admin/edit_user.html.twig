@@ -3,14 +3,55 @@
 {% block title %}Admin - Edit User{% endblock %}
 
 {% block dashboard_content %}
-    <h2 class="mb-4">Edit User</h2>
+    <div class="container mt-4">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endfor %}
 
-    {{ form_start(form) }}
-    {{ form_row(form.name) }}
-    {{ form_row(form.email) }}
-    {{ form_row(form.phoneNumber) }}
-    {{ form_row(form.address) }}
-    {{ form_row(form.role) }}
-    <button class="btn btn-success mt-3">Update</button>
-    {{ form_end(form) }}
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Edit User</h1>
+            <a href="{{ path('admin_users') }}" class="btn btn-secondary">← Back to List</a>
+        </div>
+
+        {{ form_start(form, { attr: { novalidate: 'novalidate' } }) }}
+
+        <div class="mb-3">
+            {{ form_label(form.name) }}
+            {{ form_widget(form.name, { attr: { class: 'form-control' } }) }}
+            <div class="text-danger">{{ form_errors(form.name) }}</div>
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.email) }}
+            {{ form_widget(form.email, { attr: { class: 'form-control' } }) }}
+            <div class="text-danger">{{ form_errors(form.email) }}</div>
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.phoneNumber) }}
+            {{ form_widget(form.phoneNumber, { attr: { class: 'form-control' } }) }}
+            <div class="text-danger">{{ form_errors(form.phoneNumber) }}</div>
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.address) }}
+            {{ form_widget(form.address, { attr: { class: 'form-control' } }) }}
+            <div class="text-danger">{{ form_errors(form.address) }}</div>
+        </div>
+
+        <div class="mb-3">
+            {{ form_label(form.role) }}
+            {{ form_widget(form.role, { attr: { class: 'form-select' } }) }}
+            <div class="text-danger">{{ form_errors(form.role) }}</div>
+        </div>
+
+        <button class="btn btn-success mt-3">Update</button>
+
+        {{ form_end(form) }}
+    </div>
 {% endblock %}

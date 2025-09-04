@@ -3,8 +3,8 @@
 {% block title %}Chef Schedule{% endblock %}
 
 {% block dashboard_content %}
-    <div class="container">
-        <h2>Chef Schedule</h2>
+    <div class="container mt-4">
+        <h1 class="mb-4">Chef Schedule</h1>
 
         {{ form_start(form) }}
         <div class="row mb-3">
@@ -20,7 +20,7 @@
         <hr>
 
         <h4 class="mt-4">Existing Schedules</h4>
-        <table class="table table-bordered">
+        <table class="table table-striped table-hover">
             <thead class="table-light">
             <tr>
                 <th>#</th>
@@ -29,6 +29,7 @@
                 <th>Closing</th>
                 <th>Closed</th>
                 <th>Exception Date</th>
+                <th>Action</th>
             </tr>
             </thead>
             <tbody>
@@ -40,11 +41,40 @@
                     <td>{{ schedule.closingTime|date('H:i') }}</td>
                     <td>{{ schedule.isClosed ? 'Yes' : 'No' }}</td>
                     <td>{{ schedule.exceptionDate ? schedule.exceptionDate|date('Y-m-d') : '—' }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteScheduleModal{{ schedule.id }}">
+                            Delete
+                        </button>
+                    </td>
                 </tr>
             {% else %}
-                <tr><td colspan="6" class="text-center text-muted">No schedule found.</td></tr>
+                <tr><td colspan="7" class="text-center text-muted">No schedule found.</td></tr>
             {% endfor %}
             </tbody>
         </table>
+
+        {# Modals outside the table so striping stays intact #}
+        {% for schedule in schedules %}
+            <div class="modal fade" id="deleteScheduleModal{{ schedule.id }}" tabindex="-1" aria-labelledby="deleteScheduleModalLabel{{ schedule.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title" id="deleteScheduleModalLabel{{ schedule.id }}">Confirm Delete</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete the schedule for <strong>{{ schedule.dayOfWeek }}</strong>{{ schedule.exceptionDate ? ' on ' ~ schedule.exceptionDate|date('Y-m-d') : '' }}?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <form method="post" action="{{ path('chef_schedule_delete', { id: schedule.id }) }}" class="d-inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_schedule_' ~ schedule.id) }}">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
 {% endblock %}

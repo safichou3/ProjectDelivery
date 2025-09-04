@@ -3,137 +3,149 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Form\OtpVerificationFormType;
 use App\Form\RegistrationFormType;
-//use App\Security\EmailVerifier;
 use App\Security\LoginAuthenticator;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mime\Address;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
-use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 use App\Service\TwilioService;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class RegistrationController extends AbstractController
 {
-//    private EmailVerifier $emailVerifier;
-
-//    public function __construct(EmailVerifier $emailVerifier)
-//    {
-//        $this->emailVerifier = $emailVerifier;
-//    }
-
-    #[Route('/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, UserAuthenticatorInterface $userAuthenticator, LoginAuthenticator $authenticator, EntityManagerInterface $entityManager, TwilioService $twilioService): Response
-    {
-        $user = new User();
-        $form = $this->createForm(RegistrationFormType::class, $user);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-
-
-            $otp = random_int(100000, 999999);
-            $user->setPhoneOtp($otp);
-            $user->setOtpExpiresAt((new \DateTime())->modify('+5 minutes'));
-
-            $user->setPassword(
-                $userPasswordHasher->hashPassword(
-                    $user,
-                    $form->get('plainPassword')->getData()
-                )
-            );
-
-            $entityManager->persist($user);
+    #[Route('/api/verify-otp', name: 'api_verify_otp', methods: ['POST'])]
+    public function apiVerifyOtp(Request $request, EntityManagerInterface $entityManager, SessionInterface $session, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $jwtManager, UserAuthenticatorInterface $userAuthenticator, LoginAuthenticator $authenticator): JsonResponse {
+        $data = json_decode($request->getContent(), true);
+        $otp = $data['otp'] ?? null;
+        $pendingUser = $session->get('pending_user');
+        if (!$pendingUser) {
+            return $this->json(['error' => 'No pending user found'], 400);
+        }
+        if ($otp === $pendingUser['otp'] && new \DateTime() < new \DateTime($pendingUser['otp_expires'])) {
+            $user = new User();
+            $user->setName($pendingUser['name']);
+            $user->setEmail($pendingUser['email']);
+            $user->setPassword($pendingUser['password']);
+            $user->setPhoneNumber($pendingUser['phone']);
+            $user->setAddress($pendingUser['address'] ?? null);
             $user->setIsVerified(true);
             $user->setCreatedAt(new \DateTimeImmutable());
             $user->setUpdatedAt(new \DateTimeImmutable());
+            $user->setRole($pendingUser['role'] ?? 'user');
+
+            $entityManager->persist($user);
             $entityManager->flush();
 
-            $twilioService->sendSms($user->getPhoneNumber(), "Your OTP is: $otp");
+            $session->remove('pending_user');
+            $token = $jwtManager->create($user);
 
-            // generate a signed url and email it to the user
-//            $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
-//                (new TemplatedEmail())
-//                    ->from(new Address('noreply@homemademeals.com', 'Homemade Meals'))
-//                    ->to($user->getEmail())
-//                    ->subject('Please Confirm your Email')
-//                    ->htmlTemplate('registration/confirmation_email.html.twig')
-//            );
-            // do anything else you need here, like send an email
+            $userAuthenticator->authenticateUser($user, $authenticator, $request);
 
-//            return $userAuthenticator->authenticateUser(
-//                $user,
-//                $authenticator,
-//                $request
-//            );
-
-            $this->addFlash('success', 'An OTP has been sent to your phone. Please verify.');
-            return $this->redirectToRoute('app_verify_otp', ['id' => $user->getId()]);
+            return $this->json([
+                'success' => true,
+                'message' => 'OTP verified successfully',
+                'token'   => $token,
+                'user' => [
+                    'id' => $user->getId(),
+                    'name' => $user->getName(),
+                    'email' => $user->getEmail(),
+                    'role' => $user->getRole(),
+                ]
+            ]);
         }
 
-        return $this->render('registration/register.html.twig', [
-            'registrationForm' => $form->createView(),
-        ]);
+        return $this->json(['error' => 'Invalid or expired OTP'], 400);
     }
 
-    #[Route('/verify/email', name: 'app_verify_email')]
-    public function verifyUserEmail(Request $request): Response
+
+    #[Route('/api/register', name: 'api_register', methods: ['POST'])]
+    public function apiRegister(Request $request, UserPasswordHasherInterface $passwordHasher, TwilioService $twilioService, EntityManagerInterface $em): JsonResponse
     {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+        $data = json_decode($request->getContent(), true) ?: [];
 
-        // validate email confirmation link, sets User::isVerified=true and persists
-        try {
-            $this->emailVerifier->handleEmailConfirmation($request, $this->getUser());
-        } catch (VerifyEmailExceptionInterface $exception) {
-            $this->addFlash('verify_email_error', $exception->getReason());
+        $name = trim((string)($data['name'] ?? ''));
+        $email = strtolower(trim((string)($data['email'] ?? '')));
+        $password = (string)($data['password'] ?? '');
+        $phone = trim((string)($data['phone'] ?? ''));
+        $address = trim((string)($data['address'] ?? ''));
+        $role = trim((string)($data['role'] ?? ''));
 
-            return $this->redirectToRoute('app_register');
+        if ($name === '' || $email === '' || $password === '' || $phone === '') {
+            return $this->json(['error' => 'All fields are required'], 400);
         }
 
-        // @TODO Change the redirect on success and handle or remove the flash message in your templates
-        $this->addFlash('success', 'Your email address has been verified.');
+        $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $email]);
+        if ($existingUser) {
+            return $this->json(['error' => 'Email already exists'], 400);
+        }
 
-        return $this->redirectToRoute('app_register');
+        $otp = (string)random_int(100000, 999999);
+        $expiresAt = (new \DateTime())->modify('+5 minutes');
+        $request->getSession()->set('pending_user', [
+            'name' => $name,
+            'email' => $email,
+            'password' => $passwordHasher->hashPassword(new User(), $password),
+            'phone' => $phone,
+            'role' => $role,
+            'address' => $address ?: null,
+            'otp' => $otp,
+            'otp_expires' => $expiresAt->format('Y-m-d H:i:s')
+        ]);
+
+//         $twilioService->sendOtp($pendingUser['phone'], $otp);
+
+        error_log("API OTP for testing: $otp");
+
+        return $this->json([
+            'success' => true,
+            'message' => 'OTP generated successfully. Verify to complete registration.',
+            'otp_for_testing' => $otp,
+            'user' => [
+                'email' => $email,
+                'name' => $name,
+                'phone' => $phone
+            ]
+        ], 201);
     }
 
-    #[Route('/verify-otp/{id}', name: 'app_verify_otp')]
-    public function verifyOtp(Request $request, User $user, EntityManagerInterface $entityManager, UserAuthenticatorInterface $userAuthenticator, LoginAuthenticator $authenticator): Response {
-        $form = $this->createForm(OtpVerificationFormType::class);
-        $form->handleRequest($request);
+    #[Route('/api/resend-otp', name: 'api_resend_otp', methods: ['POST'])]
+    public function apiResendOtp(Request $request, SessionInterface $session, TwilioService $twilioService): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $email = trim($data['email'] ?? '');
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $enteredOtp = $form->get('otp')->getData();
-
-            if (
-                $user->getPhoneOtp() === $enteredOtp &&
-                $user->getOtpExpiresAt() > new \DateTime()
-            ) {
-                // Clear OTP
-                $user->setPhoneOtp(null);
-                $user->setOtpExpiresAt(null);
-                $user->setIsVerified(true);
-                $entityManager->flush();
-
-                $this->addFlash('success', 'Phone verified successfully.');
-
-                // Auto-login after OTP verification
-                return $userAuthenticator->authenticateUser(
-                    $user,
-                    $authenticator,
-                    $request
-                );
-            }
-
-            $this->addFlash('error', 'Invalid or expired OTP. Please try again.');
+        if (!$email) {
+            return $this->json(['error' => 'Email is required'], 400);
         }
 
-        return $this->render('registration/verify_otp.html.twig', [
-            'otpForm' => $form->createView(),
+        $pendingUser = $session->get('pending_user');
+
+        if (!$pendingUser || $pendingUser['email'] !== $email) {
+            return $this->json(['error' => 'No pending registration found for this email'], 400);
+        }
+
+        $otp = (string)random_int(100000, 999999);
+        $expiresAt = (new \DateTime())->modify('+5 minutes');
+
+        $pendingUser['otp'] = $otp;
+        $pendingUser['otp_expires'] = $expiresAt->format('Y-m-d H:i:s');
+        $session->set('pending_user', $pendingUser);
+
+        // $twilioService->sendOtp($pendingUser['phone'], $otp);
+
+        error_log("Resent OTP: $otp");
+
+        return $this->json([
+            'success' => true,
+            'message' => 'OTP resent successfully',
+            'otp_for_testing' => $otp
         ]);
     }
 

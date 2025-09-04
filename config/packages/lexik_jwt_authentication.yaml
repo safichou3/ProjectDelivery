@@ -1,4 +1,19 @@
 lexik_jwt_authentication:
-    secret_key: '%env(resolve:JWT_SECRET_KEY)%'
-    public_key: '%env(resolve:JWT_PUBLIC_KEY)%'
+    secret_key:  '%kernel.project_dir%/config/jwt/private.pem'
+    public_key:  '%kernel.project_dir%/config/jwt/public.pem'
     pass_phrase: '%env(JWT_PASSPHRASE)%'
+    
+    # Token lifetime configuration
+    token_ttl: 86400 # 24 hours in seconds
+    
+    # Refresh token configuration
+#    refresh_token_ttl: 604800
+    
+    # User identity field
+    user_identity_field: email
+    
+    # Clock skew for token validation
+    clock_skew: 300
+    
+    # Allow expired tokens to be refreshed
+#    allow_expired_token_refresh: true

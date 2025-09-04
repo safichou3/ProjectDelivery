@@ -22,50 +22,66 @@ class MenuType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $menu = $options['data'] ?? null;
         $builder
-            ->add('title', TextType::class)
-            ->add('description', TextareaType::class)
-            ->add('price', MoneyType::class, [
-                'currency' => 'Euro',
+            ->add('title', TextType::class, [
+                'required' => true,
+                'empty_data' => '',
+            ])
+            ->add('description', TextareaType::class, [
+                'label' => 'Description',
+                'required' => true,
             ])
             ->add('image', FileType::class, [
                 'label' => 'Menu Image (jpg/png/webp)',
                 'mapped' => false,
-                'required' => true,
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Image is required.',
-                    ]),
+                'required' => !$menu || !$menu->getImage(),
+                'constraints' => !$menu || !$menu->getImage() ? [
+                    new NotBlank(['message' => 'Menu image is required.']),
                     new File([
                         'maxSize' => '2M',
-                        'mimeTypes' => [
-                            'image/jpeg',
-                            'image/png',
-                            'image/webp',
-                        ],
+                        'maxSizeMessage' => 'Image is too large. Maximum allowed size is 2MB.',
+                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
+                        'mimeTypesMessage' => 'Please upload a valid JPG, PNG, or WEBP image.',
+                    ])
+                ] : [
+                    new File([
+                        'maxSize' => '2M',
+                        'maxSizeMessage' => 'Image is too large. Maximum allowed size is 2MB.',
+                        'mimeTypes' => ['image/jpeg', 'image/png', 'image/webp'],
                         'mimeTypesMessage' => 'Please upload a valid JPG, PNG, or WEBP image.',
                     ])
                 ],
             ])
             ->add('availableFrom', DateType::class, [
                 'widget' => 'single_text',
-                'required' => true,
+                'required' => false,
                 'label' => 'Available From'
             ])
             ->add('availableTo', DateType::class, [
                 'widget' => 'single_text',
-                'required' => true,
+                'required' => false,
                 'label' => 'Available To'
             ])
             ->add('cuisineType', ChoiceType::class, [
                 'choices' => [
-                    'Pakistani' => 'Pakistani',
-                    'Indian' => 'Indian',
-                    'Chinese' => 'Chinese',
-                    'Italian' => 'Italian',
-                    'Other' => 'Other',
+                    'Italian'   => 'Italian',
+                    'French'    => 'French',
+                    'Spanish'   => 'Spanish',
+                    'Greek'     => 'Greek',
+                    'Turkish'   => 'Turkish',
+                    'German'    => 'German',
+                    'British'   => 'British',
+                    'American'  => 'American',
+                    'Other'     => 'Other',
                 ],
                 'placeholder' => 'Choose a Cuisine Type',
+                'required' => true,
+                'constraints' => [
+                    new NotBlank([
+                        'message' => 'Cuisine type is required.',
+                    ]),
+                ],
             ])
             ->add('isActive', CheckboxType::class, [
                 'required' => false,
