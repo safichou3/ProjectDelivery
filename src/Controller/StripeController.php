@@ -20,7 +20,8 @@ class StripeController
         $data = json_decode($request->getContent(), true);
         $totalAmount = $data['amount'] ?? 0;
         $orderIds = $data['orderIds'] ?? [];
-        Stripe::setApiKey('sk_test_51N6XIUA5jyT7aSXEKqp4GzJg8OQkshzJNeQnzhYNPyMP3FmAThdJfpU6oTmpYnhHttr5oe14M5cEaPYuURD5HbBs00zHogohx4');
+        $stripeSecret = getenv('STRIPE_SECRET');
+        Stripe::setApiKey($stripeSecret);
         $origin = $_ENV['APP_URL'];
 
         $session = Session::create([
