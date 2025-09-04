@@ -28,7 +28,7 @@ class StripeController
             'payment_method_types' => ['card'],
             'line_items' => [[
                 'price_data' => [
-                    'currency' => 'gbp',
+                    'currency' => 'eur',
                     'product_data' => [
                         'name' => 'Order Payment',
                     ],
