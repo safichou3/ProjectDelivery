@@ -129,7 +129,7 @@ export default function LandingPage() {
                                 style={{ cursor: "pointer" }}
                                 onClick={() => handleProtectedClick(() => navigate(`/chef/${chef.id}`, { state: { chef } }))}
                             >
-                                <div className="card border-0 rounded-3 overflow-hidden aj-drop-shadow">
+                                <div className="card border-0 rounded-3 overflow-hidden aj-drop-shadow h-100">
                                     <img
                                         className="card-img-top rounded-0"
                                         src={chef.image || "/meal.png"}
@@ -206,7 +206,7 @@ export default function LandingPage() {
                         {dishes.map((dish) => (
                                 <div key={dish.id} className="col-md-6 col-lg-3 col-12 my-3 recipe-card" style={{ cursor: "pointer" }} onClick={() => handleProtectedClick(() => navigate(`/dish/${dish.id}`))}
                                 >
-                                <div className="card border-0 rounded-3 overflow-hidden aj-drop-shadow">
+                                <div className="card border-0 rounded-3 overflow-hidden aj-drop-shadow h-100">
                                     <img
                                         className="card-img-top rounded-0"
                                         src={dish.image || "/meal.png"}

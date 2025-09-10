@@ -86,6 +86,11 @@ class RegistrationController extends AbstractController
             return $this->json(['error' => 'Email already exists'], 400);
         }
 
+        $existingPhoneUser = $em->getRepository(User::class)->findOneBy(['phone_number' => $phone]);
+        if ($existingPhoneUser) {
+            return $this->json(['error' => 'Phone number already exists'], 400);
+        }
+
         $otp = (string)random_int(100000, 999999);
         $expiresAt = (new \DateTime())->modify('+5 minutes');
         $request->getSession()->set('pending_user', [
@@ -99,18 +104,16 @@ class RegistrationController extends AbstractController
             'otp_expires' => $expiresAt->format('Y-m-d H:i:s')
         ]);
 
-//         $twilioService->sendOtp($pendingUser['phone'], $otp);
-
-        error_log("API OTP for testing: $otp");
+         $twilioService->sendOtp($phone, $otp);
 
         return $this->json([
             'success' => true,
             'message' => 'OTP generated successfully. Verify to complete registration.',
-            'otp_for_testing' => $otp,
             'user' => [
                 'email' => $email,
+                'phone' => $phone,
                 'name' => $name,
-                'phone' => $phone
+                'role' => $role,
             ]
         ], 201);
     }
@@ -138,14 +141,11 @@ class RegistrationController extends AbstractController
         $pendingUser['otp_expires'] = $expiresAt->format('Y-m-d H:i:s');
         $session->set('pending_user', $pendingUser);
 
-        // $twilioService->sendOtp($pendingUser['phone'], $otp);
-
-        error_log("Resent OTP: $otp");
+         $twilioService->sendOtp($pendingUser['phone'], $otp);
 
         return $this->json([
             'success' => true,
-            'message' => 'OTP resent successfully',
-            'otp_for_testing' => $otp
+            'message' => 'OTP resent successfully'
         ]);
     }
 

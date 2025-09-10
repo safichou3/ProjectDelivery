@@ -146,7 +146,6 @@ export default function VerificationPopup() {
             }
 
             setErrorMessage("");
-            console.log("Resent OTP:", data.otp_for_testing);
         } catch (err) {
             setErrorMessage(err.message || "Failed to resend OTP. Please try again.");
         } finally {
