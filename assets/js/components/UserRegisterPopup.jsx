@@ -53,6 +53,7 @@ export default function UserRegisterPopup() {
             setErrorMessage("Passwords do not match.");
             return;
         }
+
         try {
             if (!name || name.trim().length < 2) {
                 setErrorMessage("Please enter your name.");
@@ -72,25 +73,37 @@ export default function UserRegisterPopup() {
                 );
                 return;
             }
-            if (!password || password.length < 6) {
-                setErrorMessage("Password must be at least 6 characters.");
-                return;
-            }
             if (!acceptTerms) {
                 setErrorMessage("Please accept the terms and conditions.");
                 return;
             }
+
             setErrorMessage("");
+            let formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
 
             const registerRes = await fetch(apiUrl("/register"), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, phone, password, role })
+                body: JSON.stringify({
+                    name,
+                    email,
+                    phone: formattedPhone,
+                    password,
+                    role
+                })
             });
-            const registerData = await registerRes.json();
+
+            let registerData;
+            try {
+                registerData = await registerRes.json();
+            } catch {
+                throw new Error("Unexpected server response. Please try again.");
+            }
+
             if (!registerRes.ok || !registerData.success) {
                 throw new Error(registerData.error || "Registration failed");
             }
+
             signupModalInstance.current?.hide();
             if (window.showVerificationModal) {
                 window.showVerificationModal(registerData.user);
@@ -102,6 +115,7 @@ export default function UserRegisterPopup() {
             setErrorMessage(err.message || "Registration failed. Please try again.");
         }
     };
+
 
     return (
         <div className="modal fade" id="userRegisterPopup" tabIndex="-1" aria-labelledby="userRegisterPopupLabel" aria-hidden="true" ref={signupModalRef}>
